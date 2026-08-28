@@ -1,6 +1,4 @@
-import matplotlib.pyplot as plt
 import numpy as np
-import streamlit as st
 
 """
 FAULTS
@@ -59,6 +57,7 @@ class FrequencySimulator:
         Synchronized slider + number input pair stored in session_state.
         Changes in either widget update the other in real-time.
         """
+        import streamlit as st
         if slider_name not in st.session_state:
             st.session_state[slider_name] = initial_value
         if number_input_name not in st.session_state:
@@ -192,6 +191,7 @@ class FrequencySimulator:
 
         # --- UI Layout ---
 
+        import streamlit as st
         st.title("Motor Frequency Simulator")
 
         with st.sidebar:
@@ -336,6 +336,8 @@ class FrequencySimulator:
         This [1 + ...] bracket is tremolo
         """
         t, motor_current = self.simulate()
+        import matplotlib.pyplot as plt
+        import streamlit as st
         plt.figure(figsize=(12, 4))
         plt.plot(t, motor_current, color='#d62728')
         plt.title('Motor Sound Simulation')
