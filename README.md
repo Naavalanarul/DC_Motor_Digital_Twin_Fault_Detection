@@ -60,19 +60,16 @@ of parallel misalignment.
    respond to their own parameters, but they should be understood as
    extensions beyond this specific paper's scope, not results reproduced
    from it.
-
-### Known remaining gap
-
-The React frontend (`frontend/src/components/*`) still only visualizes the
-single fundamental sideband pair and doesn't yet render the new
-multi-harmonic survey (`analysis.harmonic_sidebands`) or the acoustic
-endpoints. The backend/simulation layer is now paper-accurate; wiring
-those extra fields into the UI charts is the natural next step.
+7. **Frontend Gap Closed:** The React frontend now accurately visualizes the
+   multi-harmonic survey (`analysis.harmonic_sidebands`) and includes a dedicated
+   `AcousticChart` to visualize acoustic pressure waveforms and peak frequencies.
+   It also features an overhauled OLED Dark Theme UI designed using the `ui-ux-pro-max` skill.
 
 ## Features
 
 - **Signal Simulation**: Generates synthetic motor current signals for various fault modes (Broken Rotor Bar, Stator Winding Fault, Eccentricity, Mechanical Unbalance), factoring in parameters like line frequency, fault frequency, amplitude, slip, poles, slots, and noise floor.
 - **FFT Analysis**: Processes time-domain signals using Fast Fourier Transform to extract fundamental frequencies and sidebands, and calculates dBc (decibels relative to carrier) values to measure fault severity.
+- **Acoustic Modeling**: Simulates acoustic pressure waveforms and evaluates spectral peaks against defined mechanical fault thresholds.
 - **Priority Queue Management (DSA)**: Implements a custom Max-Heap priority queue to efficiently rank and retrieve motors based on their peak dBc values.
 - **Database Storage**: Uses SQLite to persist motor configurations, ongoing scan results, and historical fault data.
 - **FastAPI Backend**: Provides robust REST API endpoints for simulation, analysis, motor management, and priority queue operations.
@@ -84,6 +81,7 @@ those extra fields into the UI charts is the natural next step.
 - **Backend**: Python, FastAPI, NumPy, SQLite
 - **Frontend**: React, Vite, Chart.js
 - **Algorithms & Data Structures**: Fast Fourier Transform (FFT), Max-Heap Priority Queue
+- **Deployment**: Vercel (Serverless Python Functions & Vite Static Build)
 
 ## Getting Started
 
@@ -92,30 +90,34 @@ those extra fields into the UI charts is the natural next step.
 - Python 3.8+
 - Node.js & npm
 
-### Running the Backend
+### Running Locally (Backend + Frontend)
 
-1. Navigate to the backend directory (or root, depending on where requirements are):
+1. Start the FastAPI server:
    ```bash
-   cd backend
    pip install -r requirements.txt
-   ```
-2. Start the FastAPI server:
-   ```bash
+   cd backend
    uvicorn main:app --reload
    ```
 
-### Running the Frontend
-
-1. Navigate to the frontend directory:
+2. Start the React development server:
    ```bash
    cd frontend
    npm install
-   ```
-2. Start the development server:
-   ```bash
    npm run dev
    ```
-3. Open your browser and navigate to the URL provided by Vite (usually `http://localhost:5173`).
+
+### Deployment to Vercel
+
+This repository is pre-configured for full-stack deployment on Vercel:
+- `vercel.json` and `api/index.py` handle serverless routing for the FastAPI backend.
+- `package.json` at the root orchestrates the frontend Vite build.
+- `database.py` maps the SQLite database to `/tmp/motors.db` automatically in the Vercel environment to respect the read-only file system.
+
+To deploy:
+1. Push your repository to GitHub/GitLab/Bitbucket.
+2. Import the project in your Vercel Dashboard.
+3. Leave all settings at their defaults (Root Directory: `/`, Framework Preset: `Other`).
+4. Click **Deploy**. Vercel will build both the frontend and the Python backend seamlessly.
 
 ### Running the Streamlit Simulator (Optional standalone UI)
 
