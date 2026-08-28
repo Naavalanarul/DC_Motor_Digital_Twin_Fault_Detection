@@ -42,6 +42,27 @@ export const analyzeSpectrum = async (data) => {
   }
 };
 
+export const simulateAcoustic = async (params) => {
+  try {
+    const response = await fetch(`${BASE_URL}/api/acoustic/simulate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(params),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Acoustic simulation failed: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error("Error simulating acoustic:", error);
+    throw error;
+  }
+};
+
 export const fetchMotors = async () => {
   const res = await fetch(`${BASE_URL}/api/motors`);
   if (!res.ok) throw new Error('Failed to fetch motors');

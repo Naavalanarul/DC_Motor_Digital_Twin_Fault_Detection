@@ -219,6 +219,61 @@ class FrequencySimulator:
 
         return self.t, self.motor_current
 
+    def _effective_fault_frequency(self):
+        """
+        Derive the physically-correct sideband offset frequency from the
+        fault-mode-specific parameters, instead of relying on a single
+        generic 'Fault Frequency' slider for every fault type.
+
+        Broken Rotor Bar (classical MCSA / Thomson & Fenger relation):
+            f_brb_sideband = 2 * k * s * f_line      (k = harmonic_index, s = slip)
+
+        Stator winding fault (rotor slot harmonic relation):
+            f_stator_sideband = f_line * (R*(1-s)/p) +/- n   (approximate)
+
+        Eccentricity (this paper, Sec. II.C/II.D, Eq. 9 & 13):
+            f_de  = f_n +/- f_r
+            f_ecc = f_s +/- m * f_r
+            -> here we drive the sideband spacing directly from the rotor
+               mechanical speed f_r (not an arbitrary slider value).
+
+        Mechanical unbalance / misalignment (classical vibration literature):
+            dominant sideband sits at 1x rotor mechanical speed f_r.
+        """
+        if self.fault_mode == "Broken Rotor Bar":
+            k = max(self.harmonic_index, 1)
+            return 2 * k * self.slip * self.line_frequency
+        elif self.fault_mode == "Stator winding fault":
+            p = max(self.poles, 1)
+            return self.line_frequency * (self.slots * (1 - self.slip) / p) % self.line_frequency \
+                   + self.slot_harmonic * self.network_harmonic
+        elif self.fault_mode == "Eccentricity (Asymmetry)":
+            return self.fr
+        elif self.fault_mode == "External (Mechanical Unbalance / Alignment)":
+            return self.fr
+        else:
+            # Fall back to the manually-set slider value when no mode selected
+            return self.fault_frequency
+
+    def _effective_modulation_index(self):
+        """
+        Map the fault-mode-specific severity parameter onto the AM
+        modulation depth actually used to synthesize the tremolo, instead
+        of a single generic slider for every mode.
+        """
+        if self.fault_mode == "Broken Rotor Bar":
+            return self.severity
+        elif self.fault_mode == "Stator winding fault":
+            return self.severity
+        elif self.fault_mode == "Eccentricity (Asymmetry)":
+            # Combined static + dynamic eccentricity severity, per Fig. 1
+            # (mix eccentricity = static + dynamic superimposed)
+            return self.static_severity + self.dynamic_severity
+        elif self.fault_mode == "External (Mechanical Unbalance / Alignment)":
+            return self.severity
+        else:
+            return self.modulation_index
+
     def simulate(self):
         """
         Safety catch to prevent ZeroDivisionError
@@ -231,9 +286,43 @@ class FrequencySimulator:
         num_samples = int(self.duration * self.sampling_frequency)
         t = np.linspace(0, self.duration, num_samples, endpoint=False)
         self.t = t  # Fix: save to instance attribute so plot() can use them
-        motor_current = self.amplitude * (
-            1 + self.modulation_index * np.sin(2 * np.pi * self.fault_frequency * t)
-        ) * np.sin(2 * np.pi * self.line_frequency * t)
+
+        # Resolve the physically-correct fault frequency/severity for the
+        # selected fault mode instead of always using the raw slider values.
+        # This keeps self.fault_frequency in sync for anything downstream
+        # (e.g. FFTAlgorithm, which is told what offset to look for).
+        eff_fault_freq = self._effective_fault_frequency()
+        eff_mod_index = self._effective_modulation_index()
+        if eff_fault_freq and eff_fault_freq > 0:
+            self.fault_frequency = eff_fault_freq
+
+        if self.fault_mode == "Eccentricity (Asymmetry)":
+            # Paper Eq. 13: f_ecc = f_s +/- m*f_r, observed as sidebands
+            # spaced at +/- f_r around the ODD harmonics of the supply
+            # frequency (1st, 3rd, 5th, 7th, 9th) -- see paper Fig. 6b,
+            # where sidebands appear at 1st(25,75), 3rd(125,175),
+            # 5th(225,275), 7th(325,375) for f_line=50Hz, f_r~=25Hz.
+            harmonic_orders = [1, 3, 5, 7, 9]
+            carrier = np.zeros_like(t)
+            for n in harmonic_orders:
+                # Odd harmonics naturally decay in amplitude (~1/n),
+                # matching the healthy spectral density shape in Fig. 6a.
+                carrier += (self.amplitude / n) * np.sin(2 * np.pi * n * self.line_frequency * t)
+            motor_current = carrier * (
+                1 + eff_mod_index * np.sin(2 * np.pi * self.fr * t)
+            )
+        else:
+            motor_current = self.amplitude * (
+                1 + eff_mod_index * np.sin(2 * np.pi * self.fault_frequency * t)
+            ) * np.sin(2 * np.pi * self.line_frequency * t)
+
+        # Additive measurement/environmental noise floor, so 'healthy'
+        # motors don't produce a perfectly clean, noiseless spectrum.
+        if self.noise_floor and self.noise_floor > 0:
+            motor_current = motor_current + np.random.normal(
+                0, self.noise_floor * self.amplitude, size=t.shape
+            )
+
         self.motor_current = motor_current  # Fix: save to instance attribute
 
         return self.t, self.motor_current

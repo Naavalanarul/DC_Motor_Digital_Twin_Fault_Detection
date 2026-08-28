@@ -36,7 +36,7 @@ const SpectrumChart = ({ freqData, ampData, analysisResults }) => {
         color: '#f3f4f6',
         font: {
           size: 16,
-          family: 'Inter',
+          family: 'Fira Sans',
           weight: '600'
         }
       },
@@ -93,16 +93,27 @@ const SpectrumChart = ({ freqData, ampData, analysisResults }) => {
   const backgroundColors = chartFreq.map((freq) => {
     if (!analysisResults) return 'rgba(0, 212, 255, 0.3)';
     
-    const fund = analysisResults.fundamental_freq;
-    const usb = analysisResults.upper_sideband_freq;
-    const lsb = analysisResults.lower_sideband_freq;
-    
     // Tolerance for matching floating point frequencies
     const tol = 1.0;
     
-    if (fund && Math.abs(freq - fund) < tol) return '#00d4ff'; // Cyan
-    if (usb && Math.abs(freq - usb) < tol) return '#f97316'; // Orange
-    if (lsb && Math.abs(freq - lsb) < tol) return '#eab308'; // Yellow
+    // Multi-harmonic survey coloring
+    const harmonics = analysisResults.harmonic_sidebands;
+    if (harmonics && harmonics.length > 1) {
+      for (const h of harmonics) {
+        if (Math.abs(freq - h.harmonic_freq) < tol) return '#00d4ff'; // Cyan
+        if (Math.abs(freq - h.upper_freq) < tol) return '#f97316'; // Orange
+        if (Math.abs(freq - h.lower_freq) < tol) return '#eab308'; // Yellow
+      }
+    } else {
+      // Original fundamental-only coloring
+      const fund = analysisResults.fundamental_freq;
+      const usb = analysisResults.upper_sideband_freq;
+      const lsb = analysisResults.lower_sideband_freq;
+      
+      if (fund && Math.abs(freq - fund) < tol) return '#00d4ff'; // Cyan
+      if (usb && Math.abs(freq - usb) < tol) return '#f97316'; // Orange
+      if (lsb && Math.abs(freq - lsb) < tol) return '#eab308'; // Yellow
+    }
     
     return 'rgba(0, 212, 255, 0.2)'; // Dim
   });
@@ -120,6 +131,8 @@ const SpectrumChart = ({ freqData, ampData, analysisResults }) => {
     ],
   };
 
+  const isMultiHarmonic = analysisResults && analysisResults.harmonic_sidebands && analysisResults.harmonic_sidebands.length > 1;
+
   return (
     <div className="glass-panel" style={{ height: '100%', padding: '15px', position: 'relative' }}>
       {freqData && freqData.length > 0 ? (
@@ -129,15 +142,15 @@ const SpectrumChart = ({ freqData, ampData, analysisResults }) => {
             <div style={{ position: 'absolute', top: '15px', right: '20px', fontSize: '0.75rem', display: 'flex', flexDirection: 'column', gap: '4px', background: 'rgba(0,0,0,0.5)', padding: '8px', borderRadius: '4px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <div style={{ width: '10px', height: '10px', backgroundColor: '#00d4ff' }}></div>
-                <span>Fundamental</span>
+                <span>{isMultiHarmonic ? 'Harmonics' : 'Fundamental'}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <div style={{ width: '10px', height: '10px', backgroundColor: '#f97316' }}></div>
-                <span>Upper Sideband</span>
+                <span>Upper Sideband{isMultiHarmonic ? 's' : ''}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <div style={{ width: '10px', height: '10px', backgroundColor: '#eab308' }}></div>
-                <span>Lower Sideband</span>
+                <span>Lower Sideband{isMultiHarmonic ? 's' : ''}</span>
               </div>
             </div>
           )}

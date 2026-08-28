@@ -5,9 +5,10 @@ import StatusIndicator from './components/StatusIndicator';
 import AnalysisPanel from './components/AnalysisPanel';
 import WaveformChart from './components/WaveformChart';
 import SpectrumChart from './components/SpectrumChart';
+import AcousticChart from './components/AcousticChart';
 import FleetDashboard from './components/FleetDashboard';
 import FaultHistoryTimeline from './components/FaultHistoryTimeline';
-import { fetchMotor, updateMotor, scanMotor } from './api';
+import { fetchMotor, updateMotor, scanMotor, simulateAcoustic } from './api';
 
 const defaultParams = {
   modulation_index: 0.04,
@@ -43,6 +44,7 @@ function App() {
   const [simulationData, setSimulationData] = useState(null);
   const [analysisResults, setAnalysisResults] = useState(null);
   const [spectrumData, setSpectrumData] = useState(null);
+  const [acousticData, setAcousticData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -113,6 +115,7 @@ function App() {
       setSimulationData(null);
       setAnalysisResults(null);
       setSpectrumData(null);
+      setAcousticData(null);
       return;
     }
     
@@ -124,17 +127,7 @@ function App() {
     }
     
     if (scanData.analysis) {
-      const anaResult = scanData.analysis;
-      setAnalysisResults({
-        fundamental_freq: anaResult.fundamental_freq,
-        upper_sideband_freq: anaResult.upper_sideband_freq,
-        lower_sideband_freq: anaResult.lower_sideband_freq,
-        upper_sideband_amp: anaResult.upper_sideband_amp,
-        lower_sideband_amp: anaResult.lower_sideband_amp,
-        upper_dBc: anaResult.upper_dbc,
-        lower_dBc: anaResult.lower_dbc,
-        peak_dBc: anaResult.peak_dbc,
-      });
+      setAnalysisResults(scanData.analysis);
     }
     
     if (scanData.spectrum) {
@@ -144,6 +137,16 @@ function App() {
       });
     }
   };
+
+  const currentSeverity = (() => {
+    switch (faultMode) {
+      case 'Broken Rotor Bar': return params.brb_severity;
+      case 'Stator winding fault': return params.stator_severity;
+      case 'Eccentricity (Asymmetry)': return Math.max(params.ecc_static_severity, params.ecc_dynamic_severity);
+      case 'External (Mechanical Unbalance / Alignment)': return params.mech_severity;
+      default: return 0;
+    }
+  })();
 
   const handleSelectMotor = async (motorId) => {
     setLoading(true);
@@ -162,10 +165,13 @@ function App() {
           analysis: motor.scan.analysis_json ? (typeof motor.scan.analysis_json === 'string' ? JSON.parse(motor.scan.analysis_json) : motor.scan.analysis_json) : null,
           spectrum: motor.scan.spectrum_json ? (typeof motor.scan.spectrum_json === 'string' ? JSON.parse(motor.scan.spectrum_json) : motor.scan.spectrum_json) : null,
         });
+        
+        setAcousticData(null); // Backend currently doesn't save acoustic scan in db
       } else {
         setSimulationData(null);
         setAnalysisResults(null);
         setSpectrumData(null);
+        setAcousticData(null);
       }
       
       setCurrentView('detail');
@@ -196,23 +202,19 @@ function App() {
       
       const scanResult = await scanMotor(selectedMotorId);
       populateScanResults(scanResult);
+
+      const acousticRes = await simulateAcoustic({
+        fault_present: currentSeverity > 0 && faultMode === 'Eccentricity (Asymmetry)',
+        duration: params.duration || 10
+      });
+      setAcousticData(acousticRes);
     } catch (err) {
       setError(err.message || 'Simulation failed. Is the backend running?');
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [faultMode, params, selectedMotorId]);
-
-  const currentSeverity = (() => {
-    switch (faultMode) {
-      case 'Broken Rotor Bar': return params.brb_severity;
-      case 'Stator winding fault': return params.stator_severity;
-      case 'Eccentricity (Asymmetry)': return Math.max(params.ecc_static_severity, params.ecc_dynamic_severity);
-      case 'External (Mechanical Unbalance / Alignment)': return params.mech_severity;
-      default: return 0;
-    }
-  })();
+  }, [faultMode, params, selectedMotorId, currentSeverity]);
 
   if (currentView === 'fleet') {
     return <FleetDashboard onSelectMotor={handleSelectMotor} />;
@@ -239,8 +241,13 @@ function App() {
         </div>
 
         {error && (
-          <div className="error-banner">
-            ⚠️ {error}
+          <div className="error-banner" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            {error}
           </div>
         )}
 
@@ -250,7 +257,7 @@ function App() {
             severity={currentSeverity}
           />
           <div className="right-column">
-            <StatusIndicator peakDbc={analysisResults?.peak_dBc} />
+            <StatusIndicator peakDbc={analysisResults?.peak_dbc} />
             <AnalysisPanel analysisResults={analysisResults} />
             <FaultHistoryTimeline motorId={selectedMotorId} />
           </div>
@@ -266,6 +273,7 @@ function App() {
             ampData={spectrumData?.amps}
             analysisResults={analysisResults}
           />
+          <AcousticChart acousticData={acousticData} />
         </div>
       </div>
     </div>

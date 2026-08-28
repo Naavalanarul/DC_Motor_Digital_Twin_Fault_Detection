@@ -16,6 +16,8 @@ from typing import List, Optional, Dict, Any
 
 from frequencySimulator import FrequencySimulator
 from FFTAlgorithm import FFTAlgorithm
+from soundAcoustic import SoundAcousticSimulator
+import standards
 
 from database import init_db, create_motor, get_motor, list_motors, update_motor, delete_motor, add_fault_history, get_fault_history, save_scan_results, get_scan_results
 from priority_queue import MotorPriorityQueue
@@ -90,8 +92,13 @@ def run_motor_scan(config: dict):
     t, current = sim.simulate()
     signal_list = downsample(current.tolist())
     time_list = downsample(t.tolist())
-    
-    fft_algo = FFTAlgorithm(sim.sampling_frequency, current, sim.fault_frequency)
+
+    # Eccentricity faults, per the paper's Fig. 6, show up as sidebands
+    # across the 1st/3rd/5th/7th/9th ODD harmonics of the fundamental, not
+    # just around the fundamental alone -- so survey all of them for that
+    # mode. Other modes keep the original fundamental-only check.
+    harmonic_orders = [1, 3, 5, 7, 9] if sim.fault_mode == "Eccentricity (Asymmetry)" else [1]
+    fft_algo = FFTAlgorithm(sim.sampling_frequency, current, sim.fault_frequency, harmonic_orders)
     analysis = fft_algo.main_algorithm()
     
     N = len(current)
@@ -209,6 +216,63 @@ def analyze_signal(req: AnalyzeRequest):
     results["fft_amplitudes"] = ds_amps
     
     return results
+
+class AcousticRequest(BaseModel):
+    fault_present: bool = False
+    base_frequency: float = standards.ACOUSTIC_HEALTHY_PEAK_HZ
+    fault_frequency: float = standards.ACOUSTIC_FAULT_LIMIT_HZ
+    amplitude: float = 1.0
+    # > amplitude so that, when fault_present=True, the 625Hz fault
+    # component actually dominates the spectrum (matching the paper's
+    # Fig. 7b, where the fault peak overtakes the healthy 157.2Hz peak)
+    fault_amplitude: float = 1.5
+    duration: float = 5.0
+    sampling_frequency: float = 2000.0
+    noise_floor: float = 0.05
+
+
+@app.post("/api/acoustic/simulate")
+def api_acoustic_simulate(req: AcousticRequest):
+    """
+    Sound-acoustic detection path from the paper (Sec. II.D Eq. 11,
+    Sec. IV.D Fig. 7) -- previously entirely absent from this codebase
+    even though the project is named 'Sound Fault Detector'.
+    """
+    sim = SoundAcousticSimulator(sampling_frequency=req.sampling_frequency, duration=req.duration)
+    t, pc = sim.simulate(
+        base_frequency=req.base_frequency,
+        amplitude=req.amplitude,
+        fault_present=req.fault_present,
+        fault_frequency=req.fault_frequency,
+        fault_amplitude=req.fault_amplitude,
+        noise_floor=req.noise_floor,
+    )
+    peak = sim.spectral_peak(pc)
+    status = sim.classify(peak)
+    return {
+        "time": downsample(t.tolist()),
+        "acoustic_pressure": downsample(pc.tolist()),
+        "spectral_peak_hz": peak,
+        "status": status,
+        "healthy_reference_hz": standards.ACOUSTIC_HEALTHY_PEAK_HZ,
+        "fault_limit_hz": standards.ACOUSTIC_FAULT_LIMIT_HZ,
+    }
+
+
+@app.get("/api/standards/alignment")
+def api_alignment_standard(speed_rpm: float = 1500):
+    """Table I (paper Sec. III.B): standard alignment setup of induction
+    motor, giving the allowed parallel offset / angularity for a given
+    rotor speed."""
+    return {
+        "speed_rpm": speed_rpm,
+        **standards.allowed_offset_mm(speed_rpm),
+        "classification_at_tested_offsets": {
+            f"{mm}mm": standards.classify_offset(speed_rpm, mm)
+            for mm in standards.TESTED_OFFSETS_MM
+        },
+    }
+
 
 @app.get("/api/fault-modes")
 def get_fault_modes():

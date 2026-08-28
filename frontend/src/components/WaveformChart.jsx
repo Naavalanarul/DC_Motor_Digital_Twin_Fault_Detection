@@ -45,7 +45,7 @@ const WaveformChart = ({ timeData, currentData }) => {
         color: '#f3f4f6',
         font: {
           size: 16,
-          family: 'Inter',
+          family: 'Fira Sans',
           weight: '600'
         }
       },
