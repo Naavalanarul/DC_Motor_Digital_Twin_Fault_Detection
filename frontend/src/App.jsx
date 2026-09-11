@@ -174,7 +174,7 @@ function App() {
           scalogram: motor.scan.scalogram_json ? (typeof motor.scan.scalogram_json === 'string' ? JSON.parse(motor.scan.scalogram_json) : motor.scan.scalogram_json) : null,
         });
         
-        setAcousticData(null); // Backend currently doesn't save acoustic scan in db
+        setAcousticData(null);
       } else {
         setSimulationData(null);
         setAnalysisResults(null);
@@ -242,16 +242,20 @@ function App() {
 
       <div className="main-content">
         <div className="detail-header">
-          <button className="btn-back" onClick={handleBackToFleet}>← Back to Fleet</button>
-          <div className="app-header" style={{ marginBottom: 0 }}>
-            <h1 className="app-title">{motorName} — <span className="accent-text">Digital Twin</span></h1>
-            <p className="app-subtitle">Real-time Motor Current Signature Analysis (MCSA)</p>
+          <button className="btn btn-back" onClick={handleBackToFleet}>← BACK TO FLEET</button>
+          <div style={{ marginBottom: 0 }}>
+            <h1 style={{ fontSize: '1.25rem', fontWeight: '700', letterSpacing: '-0.01em' }}>
+              {motorName} — <span style={{ color: '#a3a3a3', fontWeight: '400' }}>DIGITAL TWIN</span>
+            </h1>
+            <p style={{ fontSize: '0.75rem', color: '#737373', marginTop: '2px', fontWeight: '400' }}>
+              REAL-TIME MOTOR CURRENT SIGNATURE ANALYSIS (MCSA)
+            </p>
           </div>
         </div>
 
         {error && (
-          <div className="error-banner" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <div className="error-banner">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
               <line x1="12" y1="9" x2="12" y2="13"></line>
               <line x1="12" y1="17" x2="12.01" y2="17"></line>

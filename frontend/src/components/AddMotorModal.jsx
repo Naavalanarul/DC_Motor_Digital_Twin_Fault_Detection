@@ -98,73 +98,73 @@ const AddMotorModal = ({ onClose, onAdded }) => {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-card" onClick={e => e.stopPropagation()}>
-        <h2 className="modal-title">Add New Motor</h2>
+        <h2 className="modal-title">ADD NEW MOTOR</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">Motor Name</label>
+            <label className="form-label">MOTOR NAME</label>
             <input type="text" className="form-control" value={name} onChange={e => setName(e.target.value)} required />
           </div>
           <div className="form-group">
-            <label className="form-label">Location</label>
+            <label className="form-label">LOCATION</label>
             <input type="text" className="form-control" value={location} onChange={e => setLocation(e.target.value)} required />
           </div>
           <div className="form-group">
-            <label className="form-label">Fault Mode</label>
+            <label className="form-label">FAULT MODE</label>
             <select className="form-control" value={faultMode} onChange={e => setFaultMode(e.target.value)}>
-              <option value="Broken Rotor Bar">Broken Rotor Bar</option>
-              <option value="Stator winding fault">Stator Winding Fault</option>
-              <option value="Eccentricity (Asymmetry)">Eccentricity (Asymmetry)</option>
-              <option value="External (Mechanical Unbalance / Alignment)">Mechanical Unbalance</option>
+              <option value="Broken Rotor Bar">BROKEN ROTOR BAR</option>
+              <option value="Stator winding fault">STATOR WINDING FAULT</option>
+              <option value="Eccentricity (Asymmetry)">ECCENTRICITY (ASYMMETRY)</option>
+              <option value="External (Mechanical Unbalance / Alignment)">MECHANICAL UNBALANCE</option>
             </select>
           </div>
           
-          <div style={{ marginTop: '16px', marginBottom: '8px', color: 'var(--accent-cyan)', fontSize: '0.9rem', fontWeight: 'bold' }}>Simulation Params</div>
+          <div className="section-header">SIMULATION PARAMETERS</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            {renderNumberInput("Modulation Index", "modulation_index")}
-            {renderNumberInput("Line Freq (Hz)", "line_freq")}
-            {renderNumberInput("Fault Freq (Hz)", "fault_freq")}
-            {renderNumberInput("Amplitude", "amplitude")}
-            {renderNumberInput("Duration", "duration")}
-            {renderNumberInput("Noise Floor", "noise_floor")}
+            {renderNumberInput("MODULATION INDEX", "modulation_index")}
+            {renderNumberInput("LINE FREQ (Hz)", "line_freq")}
+            {renderNumberInput("FAULT FREQ (Hz)", "fault_freq")}
+            {renderNumberInput("AMPLITUDE", "amplitude")}
+            {renderNumberInput("DURATION", "duration")}
+            {renderNumberInput("NOISE FLOOR", "noise_floor")}
           </div>
 
-          <div style={{ marginTop: '16px', marginBottom: '8px', color: 'var(--accent-cyan)', fontSize: '0.9rem', fontWeight: 'bold' }}>Fault Specific Params</div>
+          <div className="section-header">FAULT-SPECIFIC PARAMETERS</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             {faultMode === 'Broken Rotor Bar' && (
               <>
-                {renderNumberInput("Motor Slip", "brb_slip")}
-                {renderNumberInput("Harmonic Index", "brb_harmonic_index")}
-                {renderNumberInput("Severity", "brb_severity")}
+                {renderNumberInput("MOTOR SLIP", "brb_slip")}
+                {renderNumberInput("HARMONIC INDEX", "brb_harmonic_index")}
+                {renderNumberInput("SEVERITY", "brb_severity")}
               </>
             )}
             {faultMode === 'Stator winding fault' && (
               <>
-                {renderNumberInput("Severity", "stator_severity")}
-                {renderNumberInput("Poles", "stator_poles")}
-                {renderNumberInput("Rotor Slots", "stator_slots")}
-                {renderNumberInput("Motor Slip", "stator_slip")}
-                {renderNumberInput("Slot Harmonic", "stator_slot_harmonic")}
-                {renderNumberInput("Network Harmonic", "stator_network_harmonic")}
+                {renderNumberInput("SEVERITY", "stator_severity")}
+                {renderNumberInput("POLES", "stator_poles")}
+                {renderNumberInput("ROTOR SLOTS", "stator_slots")}
+                {renderNumberInput("MOTOR SLIP", "stator_slip")}
+                {renderNumberInput("SLOT HARMONIC", "stator_slot_harmonic")}
+                {renderNumberInput("NETWORK HARMONIC", "stator_network_harmonic")}
               </>
             )}
             {faultMode === 'Eccentricity (Asymmetry)' && (
               <>
-                {renderNumberInput("Rotor Speed", "ecc_rotor_speed")}
-                {renderNumberInput("Static Severity", "ecc_static_severity")}
-                {renderNumberInput("Dynamic Severity", "ecc_dynamic_severity")}
+                {renderNumberInput("ROTOR SPEED", "ecc_rotor_speed")}
+                {renderNumberInput("STATIC SEVERITY", "ecc_static_severity")}
+                {renderNumberInput("DYNAMIC SEVERITY", "ecc_dynamic_severity")}
               </>
             )}
             {faultMode === 'External (Mechanical Unbalance / Alignment)' && (
               <>
-                {renderNumberInput("Severity", "mech_severity")}
-                {renderNumberInput("Rotor Speed", "mech_rotor_speed")}
+                {renderNumberInput("SEVERITY", "mech_severity")}
+                {renderNumberInput("ROTOR SPEED", "mech_rotor_speed")}
               </>
             )}
           </div>
 
           <div className="modal-actions">
-            <button type="button" className="btn-secondary" onClick={onClose} disabled={loading}>Cancel</button>
-            <button type="submit" className="btn-primary" disabled={loading}>{loading ? 'Saving...' : 'Add Motor'}</button>
+            <button type="button" className="btn btn-secondary" onClick={onClose} disabled={loading}>CANCEL</button>
+            <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? 'SAVING...' : 'ADD MOTOR'}</button>
           </div>
         </form>
       </div>

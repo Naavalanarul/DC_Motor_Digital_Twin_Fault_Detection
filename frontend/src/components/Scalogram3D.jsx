@@ -29,15 +29,17 @@ const Scalogram3D = ({ scalogram }) => {
         z: scalogram.amplitude,
         colorscale: [
           [0, '#000000'],
-          [0.5, '#7a7a7a'],
+          [0.5, '#737373'],
           [1, '#ffffff'],
         ],
         showscale: true,
         colorbar: {
-          title: { text: 'Amplitude', font: { color: '#a3a3a3', size: 11 } },
-          tickfont: { color: '#a3a3a3', size: 10 },
+          title: { text: 'AMPLITUDE', font: { color: '#737373', size: 10, family: 'JetBrains Mono' } },
+          tickfont: { color: '#737373', size: 9, family: 'JetBrains Mono' },
           outlinewidth: 0,
           len: 0.7,
+          borderwidth: 1,
+          bordercolor: '#2a2a2a',
         },
         contours: {
           z: {
@@ -57,29 +59,35 @@ const Scalogram3D = ({ scalogram }) => {
       autosize: true,
       paper_bgcolor: 'rgba(0,0,0,0)',
       plot_bgcolor: 'rgba(0,0,0,0)',
-      margin: { l: 0, r: 0, t: 10, b: 0 },
-      font: { family: 'Fira Sans, sans-serif', color: '#a3a3a3' },
+      margin: { l: 0, r: 0, t: 0, b: 0 },
+      font: { family: 'JetBrains Mono, monospace', color: '#737373' },
       scene: {
         xaxis: {
-          title: { text: 'Time (s)', font: { color: '#a3a3a3', size: 11 } },
-          gridcolor: 'rgba(255,255,255,0.12)',
-          zerolinecolor: 'rgba(255,255,255,0.2)',
-          color: '#a3a3a3',
-          backgroundcolor: 'rgba(0,0,0,0)',
+          title: { text: 'TIME (s)', font: { color: '#737373', size: 10, family: 'JetBrains Mono' } },
+          gridcolor: '#1f1f1f',
+          zerolinecolor: '#2a2a2a',
+          color: '#737373',
+          backgroundcolor: '#0a0a0a',
+          tickfont: { family: 'JetBrains Mono', size: 9, color: '#737373' },
+          showspikes: false,
         },
         yaxis: {
-          title: { text: 'Frequency (Hz)', font: { color: '#a3a3a3', size: 11 } },
-          gridcolor: 'rgba(255,255,255,0.12)',
-          zerolinecolor: 'rgba(255,255,255,0.2)',
-          color: '#a3a3a3',
-          backgroundcolor: 'rgba(0,0,0,0)',
+          title: { text: 'FREQUENCY (Hz)', font: { color: '#737373', size: 10, family: 'JetBrains Mono' } },
+          gridcolor: '#1f1f1f',
+          zerolinecolor: '#2a2a2a',
+          color: '#737373',
+          backgroundcolor: '#0a0a0a',
+          tickfont: { family: 'JetBrains Mono', size: 9, color: '#737373' },
+          showspikes: false,
         },
         zaxis: {
-          title: { text: 'Amplitude', font: { color: '#a3a3a3', size: 11 } },
-          gridcolor: 'rgba(255,255,255,0.12)',
-          zerolinecolor: 'rgba(255,255,255,0.2)',
-          color: '#a3a3a3',
-          backgroundcolor: 'rgba(0,0,0,0)',
+          title: { text: 'AMPLITUDE', font: { color: '#737373', size: 10, family: 'JetBrains Mono' } },
+          gridcolor: '#1f1f1f',
+          zerolinecolor: '#2a2a2a',
+          color: '#737373',
+          backgroundcolor: '#0a0a0a',
+          tickfont: { family: 'JetBrains Mono', size: 9, color: '#737373' },
+          showspikes: false,
         },
         camera: { eye: { x: 1.6, y: -1.6, z: 0.9 } },
       },
@@ -88,16 +96,8 @@ const Scalogram3D = ({ scalogram }) => {
   );
 
   return (
-    <div className="glass-panel" style={{ height: '100%', padding: '15px', position: 'relative' }}>
-      <div
-        style={{
-          fontSize: '0.9rem',
-          color: 'var(--text-secondary)',
-          fontWeight: 600,
-          letterSpacing: '1px',
-          marginBottom: '4px',
-        }}
-      >
+    <div className="panel chart-wrap" style={{ height: '100%', padding: '16px', position: 'relative' }}>
+      <div style={{ fontSize: '0.65rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'JetBrains Mono', color: '#737373', marginBottom: '10px', paddingBottom: '6px', borderBottom: '1px solid #2a2a2a' }}>
         WAVELET SCALOGRAM — TIME / FREQUENCY / AMPLITUDE
       </div>
       {hasData ? (
@@ -106,19 +106,11 @@ const Scalogram3D = ({ scalogram }) => {
           layout={layout}
           config={{ displaylogo: false, responsive: true }}
           useResizeHandler
-          style={{ width: '100%', height: 'calc(100% - 24px)' }}
+          style={{ width: '100%', height: 'calc(100% - 30px)' }}
         />
       ) : (
-        <div
-          style={{
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--text-dim)',
-          }}
-        >
-          No scalogram data available. Run simulation first.
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#404040', fontFamily: 'JetBrains Mono', fontSize: '0.8rem' }}>
+          NO SCALOGRAM DATA — RUN SIMULATION
         </div>
       )}
     </div>

@@ -27,61 +27,32 @@ const WaveformChart = ({ timeData, currentData }) => {
     maintainAspectRatio: false,
     animation: false,
     elements: {
-      point: {
-        radius: 0
-      },
-      line: {
-        tension: 0.1,
-        borderWidth: 1.5
-      }
+      point: { radius: 0 },
+      line: { tension: 0.1, borderWidth: 1 }
     },
     plugins: {
-      legend: {
-        display: false,
-      },
+      legend: { display: false },
       title: {
         display: true,
-        text: 'Motor Current Waveform',
-        color: '#f4f4f4',
-        font: {
-          size: 16,
-          family: 'Fira Sans',
-          weight: '600'
-        }
+        text: 'MOTOR CURRENT WAVEFORM',
+        color: '#737373',
+        font: { size: 11, family: 'JetBrains Mono', weight: '600' }
       },
     },
     scales: {
       x: {
-        title: {
-          display: true,
-          text: 'Time (seconds)',
-          color: '#a2a2a2'
-        },
-        grid: {
-          color: 'rgba(154, 154, 154, 0.1)'
-        },
-        ticks: {
-          color: '#a2a2a2',
-          maxTicksLimit: 10
-        }
+        title: { display: true, text: 'TIME (s)', color: '#737373', font: { family: 'JetBrains Mono', size: 10 } },
+        grid: { color: '#1f1f1f', lineWidth: 1 },
+        ticks: { color: '#737373', font: { family: 'JetBrains Mono', size: 9 }, maxTicksLimit: 10 }
       },
       y: {
-        title: {
-          display: true,
-          text: 'Current (Amps)',
-          color: '#a2a2a2'
-        },
-        grid: {
-          color: 'rgba(154, 154, 154, 0.1)'
-        },
-        ticks: {
-          color: '#a2a2a2'
-        }
+        title: { display: true, text: 'CURRENT (A)', color: '#737373', font: { family: 'JetBrains Mono', size: 10 } },
+        grid: { color: '#1f1f1f', lineWidth: 1 },
+        ticks: { color: '#737373', font: { family: 'JetBrains Mono', size: 9 } }
       }
     }
   };
 
-  // Subsample data if it's too large to improve render performance
   const maxPoints = 1000;
   let chartTime = timeData || [];
   let chartCurrent = currentData || [];
@@ -98,19 +69,22 @@ const WaveformChart = ({ timeData, currentData }) => {
       {
         label: 'Current',
         data: chartCurrent,
-        borderColor: '#e0e0e0',
-        backgroundColor: 'rgba(224, 224, 224, 0.15)',
+        borderColor: '#a3a3a3',
+        backgroundColor: 'transparent',
       },
     ],
   };
 
   return (
-    <div className="glass-panel" style={{ height: '100%', padding: '15px' }}>
+    <div className="panel chart-wrap" style={{ height: '100%', padding: '16px' }}>
+      <div style={{ fontSize: '0.65rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'JetBrains Mono', color: '#737373', marginBottom: '10px', paddingBottom: '6px', borderBottom: '1px solid #2a2a2a' }}>
+        MOTOR CURRENT WAVEFORM
+      </div>
       {timeData && timeData.length > 0 ? (
         <Line options={options} data={data} />
       ) : (
-        <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a2a2a2' }}>
-          No data available. Run simulation first.
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#404040', fontFamily: 'JetBrains Mono', fontSize: '0.8rem' }}>
+          NO WAVEFORM DATA — RUN SIMULATION
         </div>
       )}
     </div>

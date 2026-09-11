@@ -17,7 +17,6 @@ const FleetDashboard = ({ onSelectMotor }) => {
       setMotors(queue);
     } catch (err) {
       console.error('Failed to load priority queue', err);
-      // Fallback
       try {
         const rawMotors = await fetchMotors();
         setMotors(rawMotors.map(m => ({ motor_id: m.id, motor_data: m })));
@@ -67,26 +66,42 @@ const FleetDashboard = ({ onSelectMotor }) => {
     <div className="fleet-dashboard">
       <div className="fleet-header">
         <div>
-          <h1 className="app-title">Motor Fleet — <span className="accent-text">Priority Monitor</span></h1>
-          <p className="app-subtitle">Real-time Motor Health Monitoring powered by Max-Heap Priority Queue</p>
+          <h1 style={{ fontSize: '1.25rem', fontWeight: '700', letterSpacing: '-0.01em' }}>
+            MOTOR FLEET — <span style={{ color: '#a3a3a3', fontWeight: '400' }}>PRIORITY MONITOR</span>
+          </h1>
+          <p style={{ fontSize: '0.75rem', color: '#737373', marginTop: '2px', fontWeight: '400' }}>
+            REAL-TIME MOTOR HEALTH MONITORING — MAX-HEAP PRIORITY QUEUE
+          </p>
         </div>
         <div className="fleet-actions">
-          <button className="btn-primary" onClick={() => setShowAddModal(true)}>+ Add Motor</button>
-          <button className="btn-primary" onClick={handleScanAll} disabled={scanningAll}>
-            {scanningAll ? 'Scanning...' : 'Scan All'}
+          <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>+ ADD MOTOR</button>
+          <button className="btn btn-primary" onClick={handleScanAll} disabled={scanningAll}>
+            {scanningAll ? 'SCANNING...' : 'SCAN ALL'}
           </button>
         </div>
       </div>
       
       <div className="priority-summary">
-        <div className="priority-stat priority-fault">Fault: {faultCt}</div>
-        <div className="priority-stat priority-warning">Warning: {warningCt}</div>
-        <div className="priority-stat priority-healthy">Healthy: {healthyCt}</div>
-        <div className="priority-stat priority-total">Total: {motors.length}</div>
+        <div className="priority-stat fault">
+          <div className="priority-label">FAULT</div>
+          <div className="priority-value">{faultCt}</div>
+        </div>
+        <div className="priority-stat warning">
+          <div className="priority-label">WARNING</div>
+          <div className="priority-value">{warningCt}</div>
+        </div>
+        <div className="priority-stat healthy">
+          <div className="priority-label">HEALTHY</div>
+          <div className="priority-value">{healthyCt}</div>
+        </div>
+        <div className="priority-stat total">
+          <div className="priority-label">TOTAL</div>
+          <div className="priority-value">{motors.length}</div>
+        </div>
       </div>
       
       {loading ? (
-        <div className="loading-state">Loading motors...</div>
+        <div className="loading-state">LOADING MOTORS...</div>
       ) : (
         <div className="motor-grid">
           {motors.map((item, index) => (

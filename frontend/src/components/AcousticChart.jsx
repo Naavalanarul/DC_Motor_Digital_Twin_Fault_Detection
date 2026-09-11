@@ -28,27 +28,27 @@ const AcousticChart = ({ acousticData }) => {
     animation: false,
     elements: {
       point: { radius: 0 },
-      line: { tension: 0.1, borderWidth: 1.5 }
+      line: { tension: 0.1, borderWidth: 1 }
     },
     plugins: {
       legend: { display: false },
       title: {
         display: true,
-        text: 'Acoustic Pressure Waveform',
-        color: '#f4f4f4',
-        font: { size: 16, family: 'Fira Sans', weight: '600' }
+        text: 'ACOUSTIC PRESSURE WAVEFORM',
+        color: '#737373',
+        font: { size: 11, family: 'JetBrains Mono', weight: '600' }
       },
     },
     scales: {
       x: {
-        title: { display: true, text: 'Time (seconds)', color: '#a2a2a2' },
-        grid: { color: 'rgba(154, 154, 154, 0.1)' },
-        ticks: { color: '#a2a2a2', maxTicksLimit: 10 }
+        title: { display: true, text: 'Time (s)', color: '#737373', font: { family: 'JetBrains Mono', size: 10 } },
+        grid: { color: '#1f1f1f', lineWidth: 1 },
+        ticks: { color: '#737373', font: { family: 'JetBrains Mono', size: 9 }, maxTicksLimit: 10 }
       },
       y: {
-        title: { display: true, text: 'Pressure (Pa)', color: '#a2a2a2' },
-        grid: { color: 'rgba(154, 154, 154, 0.1)' },
-        ticks: { color: '#a2a2a2' }
+        title: { display: true, text: 'Pressure (Pa)', color: '#737373', font: { family: 'JetBrains Mono', size: 10 } },
+        grid: { color: '#1f1f1f', lineWidth: 1 },
+        ticks: { color: '#737373', font: { family: 'JetBrains Mono', size: 9 } }
       }
     }
   };
@@ -67,10 +67,10 @@ const AcousticChart = ({ acousticData }) => {
     labels: chartTime.map(t => typeof t === 'number' ? t.toFixed(3) : t),
     datasets: [
       {
-        label: 'Acoustic Pressure',
+        label: 'Pressure',
         data: chartPressure,
-        borderColor: '#9a9a9a',
-        backgroundColor: 'rgba(154, 154, 154, 0.2)',
+        borderColor: '#a3a3a3',
+        backgroundColor: 'transparent',
       },
     ],
   };
@@ -78,26 +78,27 @@ const AcousticChart = ({ acousticData }) => {
   const peakHz = acousticData?.spectral_peak_hz;
   const status = acousticData?.status;
   
-  let statusColor = '#6e6e6e'; // healthy: recessive
-  if (status === 'warning') statusColor = '#bdbdbd';
-  if (status === 'fault') statusColor = '#ffffff'; // fault: brightest
+  let statusColor = '#404040'; // healthy
+  if (status === 'warning') statusColor = '#8a8a8a';
+  if (status === 'fault') statusColor = '#ffffff';
 
   return (
-    <div className="glass-panel" style={{ height: '100%', padding: '15px', position: 'relative' }}>
+    <div className="panel chart-wrap" style={{ height: '100%', padding: '16px', position: 'relative' }}>
+      <div className="chart-title">ACOUSTIC PRESSURE WAVEFORM</div>
       {acousticData && chartTime.length > 0 ? (
         <>
           <Line options={options} data={data} />
           {peakHz !== undefined && (
-            <div style={{ position: 'absolute', top: '15px', right: '20px', fontSize: '0.85rem', display: 'flex', flexDirection: 'column', gap: '4px', background: 'rgba(0, 0, 0, 0.6)', padding: '10px', borderRadius: '4px', border: `1px solid ${statusColor}` }}>
-              <div style={{ color: 'var(--text-secondary)' }}>SPECTRAL PEAK</div>
-              <div style={{ color: statusColor, fontSize: '1.2rem', fontWeight: 'bold' }}>{peakHz.toFixed(1)} Hz</div>
-              <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '4px' }}>STATUS: <span style={{ color: statusColor, fontWeight: 'bold', textTransform: 'uppercase' }}>{status}</span></div>
+            <div style={{ position: 'absolute', top: '16px', right: '16px', fontSize: '0.7rem', display: 'flex', flexDirection: 'column', gap: '4px', background: '#0a0a0a', padding: '10px', border: `1px solid ${statusColor}` }}>
+              <div style={{ color: '#737373', textTransform: 'uppercase', letterSpacing: '0.05em' }}>SPECTRAL PEAK</div>
+              <div style={{ color: statusColor, fontSize: '1.1rem', fontWeight: '700', fontFamily: 'JetBrains Mono' }}>{peakHz.toFixed(1)} Hz</div>
+              <div style={{ color: '#737373', fontSize: '0.65rem', marginTop: '4px' }}>STATUS: <span style={{ color: statusColor, fontWeight: '700', textTransform: 'uppercase' }}>{status?.toUpperCase()}</span></div>
             </div>
           )}
         </>
       ) : (
-        <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a2a2a2' }}>
-          No acoustic data available.
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#404040' }}>
+          NO ACOUSTIC DATA
         </div>
       )}
     </div>
