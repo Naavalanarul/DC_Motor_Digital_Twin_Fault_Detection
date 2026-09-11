@@ -43,13 +43,20 @@ def init_db():
                  )''')
                  
     c.execute('''CREATE TABLE IF NOT EXISTS scan_results (
-                    motor_id INTEGER PRIMARY KEY REFERENCES motors(id) ON DELETE CASCADE,
-                    signal_json TEXT,
-                    spectrum_json TEXT,
-                    analysis_json TEXT,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                 )''')
-                 
+                     motor_id INTEGER PRIMARY KEY REFERENCES motors(id) ON DELETE CASCADE,
+                     signal_json TEXT,
+                     spectrum_json TEXT,
+                     analysis_json TEXT,
+                     scalogram_json TEXT,
+                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                  )''')
+
+    # Migration for DBs created before scalogram_json existed.
+    c.execute("PRAGMA table_info(scan_results)")
+    existing_cols = {row[1] for row in c.fetchall()}
+    if "scalogram_json" not in existing_cols:
+        c.execute("ALTER TABLE scan_results ADD COLUMN scalogram_json TEXT")
+
     c.execute("SELECT COUNT(*) FROM motors")
     if c.fetchone()[0] == 0:
         seed_data = [
@@ -148,21 +155,22 @@ def get_fault_history(motor_id, limit=20):
     conn.close()
     return [dict(row) for row in rows]
 
-def save_scan_results(motor_id, signal_data, spectrum_data, analysis_data):
-    """Upsert scan results. signal_data, spectrum_data, analysis_data are dicts that get JSON-serialized."""
+def save_scan_results(motor_id, signal_data, spectrum_data, analysis_data, scalogram_data=None):
+    """Upsert scan results. signal_data, spectrum_data, analysis_data, scalogram_data are dicts that get JSON-serialized."""
     conn = get_connection()
     c = conn.cursor()
     
     # SQLite doesn't have UPSERT before 3.24 for ON CONFLICT DO UPDATE, but REPLACE INTO is close or using simple insert/update
     # Let's use INSERT ON CONFLICT since it's standard SQLite3.24+
-    c.execute('''INSERT INTO scan_results (motor_id, signal_json, spectrum_json, analysis_json, updated_at) 
-                 VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+    c.execute('''INSERT INTO scan_results (motor_id, signal_json, spectrum_json, analysis_json, scalogram_json, updated_at) 
+                 VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
                  ON CONFLICT(motor_id) DO UPDATE SET 
                  signal_json=excluded.signal_json,
                  spectrum_json=excluded.spectrum_json,
                  analysis_json=excluded.analysis_json,
+                 scalogram_json=excluded.scalogram_json,
                  updated_at=CURRENT_TIMESTAMP''',
-              (motor_id, json.dumps(signal_data), json.dumps(spectrum_data), json.dumps(analysis_data)))
+              (motor_id, json.dumps(signal_data), json.dumps(spectrum_data), json.dumps(analysis_data), json.dumps(scalogram_data)))
     conn.commit()
     conn.close()
 
@@ -183,5 +191,7 @@ def get_scan_results(motor_id):
         res["spectrum"] = json.loads(res["spectrum_json"])
     if res.get("analysis_json"): 
         res["analysis"] = json.loads(res["analysis_json"])
-        
+    if res.get("scalogram_json"):
+        res["scalogram"] = json.loads(res["scalogram_json"])
+
     return res

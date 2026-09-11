@@ -84,7 +84,7 @@ const AnalysisPanel = ({ analysisResults }) => {
           </div>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'right' }}>
             <thead>
-              <tr style={{ color: 'var(--text-secondary)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <tr style={{ color: 'var(--text-secondary)', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
                 <th style={{ padding: '4px', textAlign: 'left' }}>Order</th>
                 <th style={{ padding: '4px' }}>Freq (Hz)</th>
                 <th style={{ padding: '4px' }}>L-SB (dBc)</th>
@@ -98,7 +98,7 @@ const AnalysisPanel = ({ analysisResults }) => {
                 if (h.peak_dbc >= -25) hColor = 'var(--accent-red)';
                 else if (h.peak_dbc >= -40) hColor = 'var(--accent-orange)';
                 return (
-                  <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <tr key={i} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
                     <td style={{ padding: '4px', textAlign: 'left' }}>{h.order}x</td>
                     <td style={{ padding: '4px' }}>{formatNumber(h.harmonic_freq, 1)}</td>
                     <td style={{ padding: '4px' }}>{formatNumber(h.lower_dbc, 1)}</td>

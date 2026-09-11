@@ -6,6 +6,7 @@ import AnalysisPanel from './components/AnalysisPanel';
 import WaveformChart from './components/WaveformChart';
 import SpectrumChart from './components/SpectrumChart';
 import AcousticChart from './components/AcousticChart';
+import Scalogram3D from './components/Scalogram3D';
 import FleetDashboard from './components/FleetDashboard';
 import FaultHistoryTimeline from './components/FaultHistoryTimeline';
 import { fetchMotor, updateMotor, scanMotor, simulateAcoustic } from './api';
@@ -44,6 +45,7 @@ function App() {
   const [simulationData, setSimulationData] = useState(null);
   const [analysisResults, setAnalysisResults] = useState(null);
   const [spectrumData, setSpectrumData] = useState(null);
+  const [scalogramData, setScalogramData] = useState(null);
   const [acousticData, setAcousticData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -115,6 +117,7 @@ function App() {
       setSimulationData(null);
       setAnalysisResults(null);
       setSpectrumData(null);
+      setScalogramData(null);
       setAcousticData(null);
       return;
     }
@@ -135,6 +138,10 @@ function App() {
         freqs: scanData.spectrum.fft_freqs,
         amps: scanData.spectrum.fft_amplitudes
       });
+    }
+
+    if (scanData.scalogram) {
+      setScalogramData(scanData.scalogram);
     }
   };
 
@@ -164,6 +171,7 @@ function App() {
           signal: motor.scan.signal_json ? (typeof motor.scan.signal_json === 'string' ? JSON.parse(motor.scan.signal_json) : motor.scan.signal_json) : null,
           analysis: motor.scan.analysis_json ? (typeof motor.scan.analysis_json === 'string' ? JSON.parse(motor.scan.analysis_json) : motor.scan.analysis_json) : null,
           spectrum: motor.scan.spectrum_json ? (typeof motor.scan.spectrum_json === 'string' ? JSON.parse(motor.scan.spectrum_json) : motor.scan.spectrum_json) : null,
+          scalogram: motor.scan.scalogram_json ? (typeof motor.scan.scalogram_json === 'string' ? JSON.parse(motor.scan.scalogram_json) : motor.scan.scalogram_json) : null,
         });
         
         setAcousticData(null); // Backend currently doesn't save acoustic scan in db
@@ -171,6 +179,7 @@ function App() {
         setSimulationData(null);
         setAnalysisResults(null);
         setSpectrumData(null);
+        setScalogramData(null);
         setAcousticData(null);
       }
       
@@ -274,6 +283,7 @@ function App() {
             analysisResults={analysisResults}
           />
           <AcousticChart acousticData={acousticData} />
+          <Scalogram3D scalogram={scalogramData} />
         </div>
       </div>
     </div>

@@ -16,6 +16,7 @@ from typing import List, Optional, Dict, Any
 
 from frequencySimulator import FrequencySimulator
 from FFTAlgorithm import FFTAlgorithm
+from WaveletAlgorithm import WaveletAlgorithm
 from soundAcoustic import SoundAcousticSimulator
 import standards
 
@@ -73,7 +74,8 @@ def downsample(data: list, target_size: int = 2000) -> list:
     return [data[i] for i in indices]
 
 def run_motor_scan(config: dict):
-    """Run simulation + FFT analysis for a motor config dict, return all results."""
+    """Run simulation + wavelet (CWT/DWT) analysis for a motor config dict,
+    returning all results including the 3D time-frequency-amplitude scalogram."""
     sim = FrequencySimulator()
     if "fault_mode" in config:
         sim.fault_mode = config["fault_mode"]
@@ -98,20 +100,35 @@ def run_motor_scan(config: dict):
     # just around the fundamental alone -- so survey all of them for that
     # mode. Other modes keep the original fundamental-only check.
     harmonic_orders = [1, 3, 5, 7, 9] if sim.fault_mode == "Eccentricity (Asymmetry)" else [1]
+
+    # Primary fault-detection engine: wavelet transform (CWT + DWT), per
+    # R. Polikar's wavelet tutorial / MRA framework -- see WaveletAlgorithm.py.
+    wavelet_algo = WaveletAlgorithm(
+        sim.sampling_frequency, current, sim.fault_frequency,
+        line_freq=sim.line_frequency, harmonic_orders=harmonic_orders,
+    )
+    analysis = wavelet_algo.main_algorithm()
+    scalogram = wavelet_algo.scalogram()
+
+    # FFT is kept only as a secondary, reference spectrum (still shown on the
+    # 2D spectrum chart) so the wavelet result can be sanity-checked against
+    # the classical method it replaces as the primary detector.
     fft_algo = FFTAlgorithm(sim.sampling_frequency, current, sim.fault_frequency, harmonic_orders)
-    analysis = fft_algo.main_algorithm()
-    
+    fft_reference = fft_algo.main_algorithm()
+
     N = len(current)
     fft_amp = np.abs(np.fft.fft(current)) * (2.0 / N)
     fft_freqs = np.fft.fftfreq(N, 1.0 / sim.sampling_frequency)
     half = N // 2
     pos_freqs = downsample(fft_freqs[:half].tolist())
     pos_amps = downsample(fft_amp[:half].tolist())
-    
+
     return {
         "signal": {"time": time_list, "motor_current": signal_list},
         "analysis": analysis,
-        "spectrum": {"fft_freqs": pos_freqs, "fft_amplitudes": pos_amps}
+        "fft_reference": fft_reference,
+        "spectrum": {"fft_freqs": pos_freqs, "fft_amplitudes": pos_amps},
+        "scalogram": scalogram,
     }
 
 
@@ -191,11 +208,17 @@ def simulate_signal(req: SimulationRequest):
 @app.post("/api/analyze")
 def analyze_signal(req: AnalyzeRequest):
     signal_arr = np.array(req.signal)
-    
-    # Run FFTAlgorithm
+
+    # Primary detector: wavelet transform (CWT + DWT), per Polikar's MRA
+    # framework. See WaveletAlgorithm.py for the full explanation.
+    wavelet_algo = WaveletAlgorithm(req.sampling_freq, signal_arr, req.fault_freq)
+    results = wavelet_algo.main_algorithm()
+    results["scalogram"] = wavelet_algo.scalogram()
+
+    # FFT kept as a secondary reference spectrum only.
     fft_algo = FFTAlgorithm(req.sampling_freq, signal_arr, req.fault_freq)
-    results = fft_algo.main_algorithm()
-    
+    results["fft_reference"] = fft_algo.main_algorithm()
+
     # Compute full FFT spectrum
     N = len(signal_arr)
     T = 1.0 / req.sampling_freq
@@ -365,7 +388,7 @@ def api_scan_motor(motor_id: int):
     status = dbc_to_status(peak_dbc)
     
     update_motor(motor_id, peak_dbc=peak_dbc, status=status)
-    save_scan_results(motor_id, results["signal"], results["spectrum"], results["analysis"])
+    save_scan_results(motor_id, results["signal"], results["spectrum"], results["analysis"], results["scalogram"])
     
     add_fault_history(
         motor_id,
@@ -391,7 +414,8 @@ def api_scan_motor(motor_id: int):
         "peak_dbc": peak_dbc,
         "analysis": results["analysis"],
         "signal": results["signal"],
-        "spectrum": results["spectrum"]
+        "spectrum": results["spectrum"],
+        "scalogram": results["scalogram"],
     }
 
 @app.get("/api/motors/{motor_id}/history")

@@ -11,9 +11,9 @@ const DigitalTwinMotor = ({ faultMode, severity }) => {
 
   const getRotorBarFill = (index) => {
     if (faultMode === 'Broken Rotor Bar' && (index === 2 || index === 7 || index === 13)) {
-      return '#ef4444';
+      return '#ffffff'; // broken bar: brightest, unmissable
     }
-    return '#374151';
+    return '#404040';
   };
 
   const getRotorBarClass = (index) => {
@@ -52,8 +52,8 @@ const DigitalTwinMotor = ({ faultMode, severity }) => {
             width={24}
             height={20}
             rx={3}
-            fill="#1a2332"
-            stroke="rgba(0, 212, 255, 0.6)"
+            fill="#222222"
+            stroke="rgba(154, 154, 154, 0.6)"
             strokeWidth="0.8"
             transform={`rotate(${angle} ${cx} ${cy})`}
           />
@@ -65,7 +65,7 @@ const DigitalTwinMotor = ({ faultMode, severity }) => {
               y1={cy - 7 + offset}
               x2={cx + 8}
               y2={cy - 7 + offset}
-              stroke="rgba(0, 212, 255, 0.4)"
+              stroke="rgba(154, 154, 154, 0.4)"
               strokeWidth="0.5"
               transform={`rotate(${angle} ${cx} ${cy})`}
             />
@@ -92,7 +92,7 @@ const DigitalTwinMotor = ({ faultMode, severity }) => {
           r={6}
           fill={getRotorBarFill(i)}
           className={getRotorBarClass(i)}
-          stroke="rgba(0, 212, 255, 0.4)"
+          stroke="rgba(154, 154, 154, 0.4)"
           strokeWidth="0.5"
         />
       );
@@ -118,38 +118,38 @@ const DigitalTwinMotor = ({ faultMode, severity }) => {
         <svg width="100%" height="100%" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet" style={{ maxHeight: '400px' }}>
           <defs>
             <radialGradient id="statorGrad" cx="50%" cy="50%" r="50%" fx="45%" fy="45%">
-              <stop offset="60%" stopColor="#222831" />
-              <stop offset="100%" stopColor="#393E46" />
+              <stop offset="60%" stopColor="#272727" />
+              <stop offset="100%" stopColor="#3d3d3d" />
             </radialGradient>
             <radialGradient id="rotorGrad" cx="50%" cy="50%" r="50%" fx="35%" fy="35%">
-              <stop offset="0%" stopColor="#393E46" />
-              <stop offset="100%" stopColor="#222831" />
+              <stop offset="0%" stopColor="#3d3d3d" />
+              <stop offset="100%" stopColor="#272727" />
             </radialGradient>
             <radialGradient id="shaftGrad" cx="50%" cy="50%" r="50%" fx="40%" fy="40%">
-              <stop offset="0%" stopColor="#94a3b8" />
-              <stop offset="100%" stopColor="#475569" />
+              <stop offset="0%" stopColor="#a1a1a1" />
+              <stop offset="100%" stopColor="#535353" />
             </radialGradient>
             <filter id="glow">
               <feGaussianBlur stdDeviation="3" result="blur" />
               <feComposite in="SourceGraphic" in2="blur" operator="over" />
             </filter>
             <filter id="cyanGlow">
-              <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#00d4ff" floodOpacity="0.3" />
+              <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#9a9a9a" floodOpacity="0.3" />
             </filter>
           </defs>
 
           {/* Center guidelines (blueprint style) */}
-          <line x1="200" y1="10" x2="200" y2="390" stroke="rgba(0, 212, 255, 0.15)" strokeWidth="0.5" strokeDasharray="4,6" />
-          <line x1="10" y1="200" x2="390" y2="200" stroke="rgba(0, 212, 255, 0.15)" strokeWidth="0.5" strokeDasharray="4,6" />
+          <line x1="200" y1="10" x2="200" y2="390" stroke="rgba(154, 154, 154, 0.15)" strokeWidth="0.5" strokeDasharray="4,6" />
+          <line x1="10" y1="200" x2="390" y2="200" stroke="rgba(154, 154, 154, 0.15)" strokeWidth="0.5" strokeDasharray="4,6" />
 
           {/* Dimension circle (outer reference) */}
-          <circle cx="200" cy="200" r="190" fill="none" stroke="rgba(0, 212, 255, 0.12)" strokeWidth="0.5" strokeDasharray="2,4" />
+          <circle cx="200" cy="200" r="190" fill="none" stroke="rgba(154, 154, 154, 0.12)" strokeWidth="0.5" strokeDasharray="2,4" />
 
           {/* === STATOR === */}
           {/* Outer housing */}
-          <circle cx="200" cy="200" r="175" fill="url(#statorGrad)" stroke="rgba(0, 212, 255, 0.5)" strokeWidth="1.5" />
+          <circle cx="200" cy="200" r="175" fill="url(#statorGrad)" stroke="rgba(154, 154, 154, 0.5)" strokeWidth="1.5" />
           {/* Inner stator bore */}
-          <circle cx="200" cy="200" r="130" fill="none" stroke="rgba(0, 212, 255, 0.3)" strokeWidth="0.8" />
+          <circle cx="200" cy="200" r="130" fill="none" stroke="rgba(154, 154, 154, 0.3)" strokeWidth="0.8" />
 
           {/* Stator windings */}
           {renderWindings()}
@@ -165,7 +165,7 @@ const DigitalTwinMotor = ({ faultMode, severity }) => {
               cy="200"
               r="95"
               fill="url(#rotorGrad)"
-              stroke="rgba(0, 212, 255, 0.4)"
+              stroke="rgba(154, 154, 154, 0.4)"
               strokeWidth="0.8"
               className={isSpinning ? 'animate-spin-slow' : ''}
               style={{ transformOrigin: '200px 200px' }}
@@ -177,35 +177,35 @@ const DigitalTwinMotor = ({ faultMode, severity }) => {
             </g>
 
             {/* === SHAFT === */}
-            <circle cx="200" cy="200" r="28" fill="url(#shaftGrad)" stroke="#cbd5e1" strokeWidth="1.5" className={shaftClass} />
-            <circle cx="200" cy="200" r="18" fill="#475569" stroke="rgba(0, 212, 255, 0.2)" strokeWidth="0.5" className={shaftClass} />
-            <circle cx="200" cy="200" r="8" fill="#1a2332" stroke="rgba(0, 212, 255, 0.3)" strokeWidth="0.5" className={shaftClass} />
+            <circle cx="200" cy="200" r="28" fill="url(#shaftGrad)" stroke="#d3d3d3" strokeWidth="1.5" className={shaftClass} />
+            <circle cx="200" cy="200" r="18" fill="#535353" stroke="rgba(154, 154, 154, 0.2)" strokeWidth="0.5" className={shaftClass} />
+            <circle cx="200" cy="200" r="8" fill="#222222" stroke="rgba(154, 154, 154, 0.3)" strokeWidth="0.5" className={shaftClass} />
             {/* Keyway slot */}
-            <rect x="196" y="174" width="8" height="12" rx="1" fill="#334155" className={shaftClass} />
+            <rect x="196" y="174" width="8" height="12" rx="1" fill="#3f3f3f" className={shaftClass} />
           </g>
 
           {/* === LABELS === */}
           <g style={{ pointerEvents: 'none' }}>
             {/* Stator label */}
-            <text x="30" y="38" fill="rgba(0, 212, 255, 0.7)" fontSize="10" fontFamily="monospace" fontWeight="600">STATOR</text>
-            <line x1="70" y1="42" x2="95" y2="70" stroke="rgba(0, 212, 255, 0.3)" strokeWidth="0.8" />
-            <circle cx="95" cy="70" r="2" fill="rgba(0, 212, 255, 0.5)" />
+            <text x="30" y="38" fill="rgba(154, 154, 154, 0.7)" fontSize="10" fontFamily="monospace" fontWeight="600">STATOR</text>
+            <line x1="70" y1="42" x2="95" y2="70" stroke="rgba(154, 154, 154, 0.3)" strokeWidth="0.8" />
+            <circle cx="95" cy="70" r="2" fill="rgba(154, 154, 154, 0.5)" />
 
             {/* Rotor label */}
-            <text x="320" y="370" fill="rgba(0, 212, 255, 0.7)" fontSize="10" fontFamily="monospace" fontWeight="600">ROTOR</text>
-            <line x1="315" y1="365" x2="270" y2="280" stroke="rgba(0, 212, 255, 0.3)" strokeWidth="0.8" />
-            <circle cx="270" cy="280" r="2" fill="rgba(0, 212, 255, 0.5)" />
+            <text x="320" y="370" fill="rgba(154, 154, 154, 0.7)" fontSize="10" fontFamily="monospace" fontWeight="600">ROTOR</text>
+            <line x1="315" y1="365" x2="270" y2="280" stroke="rgba(154, 154, 154, 0.3)" strokeWidth="0.8" />
+            <circle cx="270" cy="280" r="2" fill="rgba(154, 154, 154, 0.5)" />
 
             {/* Air gap label */}
-            <text x="28" y="204" fill="rgba(255,255,255,0.3)" fontSize="9" fontFamily="monospace">AIR GAP</text>
-            <line x1="74" y1="200" x2="95" y2="200" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
+            <text x="28" y="204" fill="rgba(255, 255, 255, 0.3)" fontSize="9" fontFamily="monospace">AIR GAP</text>
+            <line x1="74" y1="200" x2="95" y2="200" stroke="rgba(255, 255, 255, 0.15)" strokeWidth="0.5" />
 
             {/* Shaft label */}
-            <text x="330" y="195" fill="rgba(0, 212, 255, 0.5)" fontSize="9" fontFamily="monospace">SHAFT</text>
-            <line x1="325" y1="195" x2="230" y2="200" stroke="rgba(0, 212, 255, 0.15)" strokeWidth="0.5" />
+            <text x="330" y="195" fill="rgba(154, 154, 154, 0.5)" fontSize="9" fontFamily="monospace">SHAFT</text>
+            <line x1="325" y1="195" x2="230" y2="200" stroke="rgba(154, 154, 154, 0.15)" strokeWidth="0.5" />
 
             {/* Dimension annotation */}
-            <text x="195" y="398" fill="rgba(255,255,255,0.2)" fontSize="8" fontFamily="monospace" textAnchor="middle">Ø 350mm</text>
+            <text x="195" y="398" fill="rgba(255, 255, 255, 0.2)" fontSize="8" fontFamily="monospace" textAnchor="middle">Ø 350mm</text>
           </g>
         </svg>
       </div>

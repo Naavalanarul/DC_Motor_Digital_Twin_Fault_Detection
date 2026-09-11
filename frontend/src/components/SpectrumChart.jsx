@@ -33,7 +33,7 @@ const SpectrumChart = ({ freqData, ampData, analysisResults }) => {
       title: {
         display: true,
         text: 'FFT Frequency Spectrum',
-        color: '#f3f4f6',
+        color: '#f4f4f4',
         font: {
           size: 16,
           family: 'Fira Sans',
@@ -51,13 +51,13 @@ const SpectrumChart = ({ freqData, ampData, analysisResults }) => {
         title: {
           display: true,
           text: 'Frequency (Hz)',
-          color: '#9ca3af'
+          color: '#a2a2a2'
         },
         grid: {
-          color: 'rgba(0, 212, 255, 0.05)'
+          color: 'rgba(154, 154, 154, 0.05)'
         },
         ticks: {
-          color: '#9ca3af',
+          color: '#a2a2a2',
           maxTicksLimit: 15
         }
       },
@@ -65,13 +65,13 @@ const SpectrumChart = ({ freqData, ampData, analysisResults }) => {
         title: {
           display: true,
           text: 'Amplitude',
-          color: '#9ca3af'
+          color: '#a2a2a2'
         },
         grid: {
-          color: 'rgba(0, 212, 255, 0.1)'
+          color: 'rgba(154, 154, 154, 0.1)'
         },
         ticks: {
-          color: '#9ca3af'
+          color: '#a2a2a2'
         },
         type: 'logarithmic'
       }
@@ -91,7 +91,7 @@ const SpectrumChart = ({ freqData, ampData, analysisResults }) => {
 
   // Determine colors based on analysis results
   const backgroundColors = chartFreq.map((freq) => {
-    if (!analysisResults) return 'rgba(0, 212, 255, 0.3)';
+    if (!analysisResults) return 'rgba(255, 255, 255, 0.25)';
     
     // Tolerance for matching floating point frequencies
     const tol = 1.0;
@@ -100,9 +100,9 @@ const SpectrumChart = ({ freqData, ampData, analysisResults }) => {
     const harmonics = analysisResults.harmonic_sidebands;
     if (harmonics && harmonics.length > 1) {
       for (const h of harmonics) {
-        if (Math.abs(freq - h.harmonic_freq) < tol) return '#00d4ff'; // Cyan
-        if (Math.abs(freq - h.upper_freq) < tol) return '#f97316'; // Orange
-        if (Math.abs(freq - h.lower_freq) < tol) return '#eab308'; // Yellow
+        if (Math.abs(freq - h.harmonic_freq) < tol) return '#ffffff'; // Harmonic (brightest)
+        if (Math.abs(freq - h.upper_freq) < tol) return '#a8a8a8'; // Upper sideband
+        if (Math.abs(freq - h.lower_freq) < tol) return '#6e6e6e'; // Lower sideband
       }
     } else {
       // Original fundamental-only coloring
@@ -110,12 +110,12 @@ const SpectrumChart = ({ freqData, ampData, analysisResults }) => {
       const usb = analysisResults.upper_sideband_freq;
       const lsb = analysisResults.lower_sideband_freq;
       
-      if (fund && Math.abs(freq - fund) < tol) return '#00d4ff'; // Cyan
-      if (usb && Math.abs(freq - usb) < tol) return '#f97316'; // Orange
-      if (lsb && Math.abs(freq - lsb) < tol) return '#eab308'; // Yellow
+      if (fund && Math.abs(freq - fund) < tol) return '#ffffff'; // Fundamental (brightest)
+      if (usb && Math.abs(freq - usb) < tol) return '#a8a8a8'; // Upper sideband
+      if (lsb && Math.abs(freq - lsb) < tol) return '#6e6e6e'; // Lower sideband
     }
     
-    return 'rgba(0, 212, 255, 0.2)'; // Dim
+    return 'rgba(255, 255, 255, 0.12)'; // Dim (noise floor)
   });
 
   const data = {
@@ -139,24 +139,24 @@ const SpectrumChart = ({ freqData, ampData, analysisResults }) => {
         <>
           <Bar options={options} data={data} />
           {analysisResults && (
-            <div style={{ position: 'absolute', top: '15px', right: '20px', fontSize: '0.75rem', display: 'flex', flexDirection: 'column', gap: '4px', background: 'rgba(0,0,0,0.5)', padding: '8px', borderRadius: '4px' }}>
+            <div style={{ position: 'absolute', top: '15px', right: '20px', fontSize: '0.75rem', display: 'flex', flexDirection: 'column', gap: '4px', background: 'rgba(0, 0, 0, 0.5)', padding: '8px', borderRadius: '4px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <div style={{ width: '10px', height: '10px', backgroundColor: '#00d4ff' }}></div>
+                <div style={{ width: '10px', height: '10px', backgroundColor: '#ffffff' }}></div>
                 <span>{isMultiHarmonic ? 'Harmonics' : 'Fundamental'}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <div style={{ width: '10px', height: '10px', backgroundColor: '#f97316' }}></div>
+                <div style={{ width: '10px', height: '10px', backgroundColor: '#a8a8a8' }}></div>
                 <span>Upper Sideband{isMultiHarmonic ? 's' : ''}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <div style={{ width: '10px', height: '10px', backgroundColor: '#eab308' }}></div>
+                <div style={{ width: '10px', height: '10px', backgroundColor: '#6e6e6e' }}></div>
                 <span>Lower Sideband{isMultiHarmonic ? 's' : ''}</span>
               </div>
             </div>
           )}
         </>
       ) : (
-        <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
+        <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a2a2a2' }}>
           No data available. Run simulation first.
         </div>
       )}

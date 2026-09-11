@@ -2,11 +2,13 @@ import React from 'react';
 
 const MotorCard = ({ motor, rank, onSelect, onScan, scanning }) => {
   // Status color mapping
+  // Brightness encodes severity (no hue): healthy recedes, fault is the
+  // brightest, highest-contrast value on the page.
   const statusColorMap = {
-    healthy: '#22c55e',
-    warning: '#f97316',
-    fault: '#ef4444',
-    unknown: '#6b7280'
+    healthy: '#707070',
+    warning: '#bdbdbd',
+    fault: '#ffffff',
+    unknown: '#4a4a4a'
   };
   const statusColor = statusColorMap[motor.status] || statusColorMap.unknown;
   

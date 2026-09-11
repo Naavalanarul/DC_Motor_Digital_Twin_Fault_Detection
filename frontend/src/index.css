@@ -227,7 +227,7 @@ button, a, .clickable {
 
 .bottom-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 20px;
   height: 360px;
   animation: fadeIn 0.5s ease 0.2s both;

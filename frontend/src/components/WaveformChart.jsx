@@ -42,7 +42,7 @@ const WaveformChart = ({ timeData, currentData }) => {
       title: {
         display: true,
         text: 'Motor Current Waveform',
-        color: '#f3f4f6',
+        color: '#f4f4f4',
         font: {
           size: 16,
           family: 'Fira Sans',
@@ -55,13 +55,13 @@ const WaveformChart = ({ timeData, currentData }) => {
         title: {
           display: true,
           text: 'Time (seconds)',
-          color: '#9ca3af'
+          color: '#a2a2a2'
         },
         grid: {
-          color: 'rgba(0, 212, 255, 0.1)'
+          color: 'rgba(154, 154, 154, 0.1)'
         },
         ticks: {
-          color: '#9ca3af',
+          color: '#a2a2a2',
           maxTicksLimit: 10
         }
       },
@@ -69,13 +69,13 @@ const WaveformChart = ({ timeData, currentData }) => {
         title: {
           display: true,
           text: 'Current (Amps)',
-          color: '#9ca3af'
+          color: '#a2a2a2'
         },
         grid: {
-          color: 'rgba(0, 212, 255, 0.1)'
+          color: 'rgba(154, 154, 154, 0.1)'
         },
         ticks: {
-          color: '#9ca3af'
+          color: '#a2a2a2'
         }
       }
     }
@@ -98,8 +98,8 @@ const WaveformChart = ({ timeData, currentData }) => {
       {
         label: 'Current',
         data: chartCurrent,
-        borderColor: '#d62728', // Matplotlib default red
-        backgroundColor: 'rgba(214, 39, 40, 0.5)',
+        borderColor: '#e0e0e0',
+        backgroundColor: 'rgba(224, 224, 224, 0.15)',
       },
     ],
   };
@@ -109,7 +109,7 @@ const WaveformChart = ({ timeData, currentData }) => {
       {timeData && timeData.length > 0 ? (
         <Line options={options} data={data} />
       ) : (
-        <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
+        <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a2a2a2' }}>
           No data available. Run simulation first.
         </div>
       )}

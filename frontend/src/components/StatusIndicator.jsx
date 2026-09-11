@@ -11,15 +11,15 @@ const StatusIndicator = ({ peakDbc }) => {
   } else if (peakDbc < -40) {
     statusText = 'HEALTHY';
     statusClass = 'status-healthy';
-    glowStyle = { boxShadow: '0 0 20px rgba(34,197,94,0.3)' };
+    glowStyle = { boxShadow: '0 0 12px rgba(255, 255, 255, 0.12)' };
   } else if (peakDbc >= -40 && peakDbc <= -25) {
     statusText = 'WARNING';
     statusClass = 'status-warning';
-    glowStyle = { boxShadow: '0 0 20px rgba(249,115,22,0.3)' };
+    glowStyle = { boxShadow: '0 0 20px rgba(255, 255, 255, 0.3)' };
   } else {
     statusText = 'FAULT DETECTED';
     statusClass = 'status-fault';
-    glowStyle = { boxShadow: '0 0 30px rgba(239,68,68,0.4)' };
+    glowStyle = { boxShadow: '0 0 34px rgba(255, 255, 255, 0.65)' };
   }
 
   return (

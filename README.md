@@ -61,14 +61,37 @@ of parallel misalignment.
    extensions beyond this specific paper's scope, not results reproduced
    from it.
 7. **Frontend Gap Closed:** The React frontend now accurately visualizes the
-   multi-harmonic survey (`analysis.harmonic_sidebands`) and includes a dedicated
-   `AcousticChart` to visualize acoustic pressure waveforms and peak frequencies.
-   It also features an overhauled OLED Dark Theme UI designed using the `ui-ux-pro-max` skill.
+    multi-harmonic survey (`analysis.harmonic_sidebands`) and includes a dedicated
+    `AcousticChart` to visualize acoustic pressure waveforms and peak frequencies.
+    It also features an overhauled OLED Dark Theme UI designed using the `ui-ux-pro-max` skill.
+8. **Detection engine replaced: FFT → wavelet transform (Polikar MRA).**
+   `WaveletAlgorithm.py` is now the primary fault-detection engine used by
+   every backend endpoint (`/api/motors/{id}/scan`, `/api/analyze`), following
+   R. Polikar's "The Wavelet Tutorial" multiresolution-analysis framework:
+   a continuous wavelet transform (complex Morlet) gives a magnitude value at
+   every (time, frequency) point instead of one spectrum averaged over the
+   whole window, so intermittent/time-varying sidebands are no longer diluted
+   away; a discrete wavelet transform (Daubechies-4, Mallat's algorithm) adds
+   an independent multiresolution energy fingerprint (`wavelet_energy_bands`)
+   as a second, corroborating severity signal. FFT is kept only as a
+   secondary reference spectrum (`fft_reference` / the 2D spectrum chart), not
+   the detector.
+9. **3D time/frequency/amplitude scalogram.** The CWT's full (time,
+   frequency) magnitude grid is exposed via `scalogram()` and rendered as a
+   Plotly 3D surface (`Scalogram3D.jsx`) so a fault's evolution over time is
+   visible directly, not just its time-averaged FFT peak.
+10. **Minimalist black & white theme.** The UI was rebuilt to a strict
+    grayscale palette (no hue anywhere) -- fault severity is now communicated
+    through brightness/weight alone (fault = brightest white, healthy = a
+    muted recessive gray), rather than the previous red/orange/green/cyan
+    color-coded OLED theme.
 
 ## Features
 
 - **Signal Simulation**: Generates synthetic motor current signals for various fault modes (Broken Rotor Bar, Stator Winding Fault, Eccentricity, Mechanical Unbalance), factoring in parameters like line frequency, fault frequency, amplitude, slip, poles, slots, and noise floor.
-- **FFT Analysis**: Processes time-domain signals using Fast Fourier Transform to extract fundamental frequencies and sidebands, and calculates dBc (decibels relative to carrier) values to measure fault severity.
+- **Wavelet Analysis (primary detector)**: Applies a continuous wavelet transform (complex Morlet CWT) and discrete wavelet transform (Daubechies-4 DWT) to the time-domain signal, following R. Polikar's wavelet-tutorial MRA framework, extracting fundamental/sideband frequencies, dBc severity, and per-band energy fingerprints while preserving time resolution.
+- **FFT (reference only)**: Still computed as a secondary spectrum for comparison against the wavelet result, and to drive the 2D spectrum chart.
+- **3D Scalogram**: Full time × frequency × amplitude surface from the CWT, visualized as an interactive 3D Plotly surface.
 - **Acoustic Modeling**: Simulates acoustic pressure waveforms and evaluates spectral peaks against defined mechanical fault thresholds.
 - **Priority Queue Management (DSA)**: Implements a custom Max-Heap priority queue to efficiently rank and retrieve motors based on their peak dBc values.
 - **Database Storage**: Uses SQLite to persist motor configurations, ongoing scan results, and historical fault data.
@@ -80,7 +103,7 @@ of parallel misalignment.
 
 - **Backend**: Python, FastAPI, NumPy, SQLite
 - **Frontend**: React, Vite, Chart.js
-- **Algorithms & Data Structures**: Fast Fourier Transform (FFT), Max-Heap Priority Queue
+- **Algorithms & Data Structures**: Wavelet Transform (CWT + DWT, Polikar MRA) as primary detector, Fast Fourier Transform (FFT) as reference, Max-Heap Priority Queue
 - **Deployment**: Vercel (Serverless Python Functions & Vite Static Build)
 
 ## Getting Started
@@ -106,7 +129,7 @@ of parallel misalignment.
    npm run dev
    ```
 
-### Deployment to Vercel
+### Deployment to Vercel`
 
 This repository is pre-configured for full-stack deployment on Vercel:
 - `vercel.json` and `api/index.py` handle serverless routing for the FastAPI backend.
