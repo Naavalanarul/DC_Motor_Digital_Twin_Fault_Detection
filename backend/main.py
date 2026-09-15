@@ -413,6 +413,7 @@ def api_scan_motor(motor_id: int):
         "status": status,
         "peak_dbc": peak_dbc,
         "analysis": results["analysis"],
+        "fft_reference": results["fft_reference"],
         "signal": results["signal"],
         "spectrum": results["spectrum"],
         "scalogram": results["scalogram"],
