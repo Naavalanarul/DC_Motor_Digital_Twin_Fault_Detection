@@ -272,7 +272,6 @@ function App() {
           <div className="right-column">
             <StatusIndicator peakDbc={analysisResults?.peak_dbc} />
             <AnalysisPanel analysisResults={analysisResults} />
-            <FaultHistoryTimeline motorId={selectedMotorId} />
           </div>
         </div>
 
@@ -289,6 +288,8 @@ function App() {
           <AcousticChart acousticData={acousticData} />
           <Scalogram3D scalogram={scalogramData} />
         </div>
+
+        <FaultHistoryTimeline motorId={selectedMotorId} />
       </div>
     </div>
   );

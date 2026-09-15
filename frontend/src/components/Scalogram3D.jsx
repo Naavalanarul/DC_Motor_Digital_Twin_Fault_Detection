@@ -96,18 +96,20 @@ const Scalogram3D = ({ scalogram }) => {
   );
 
   return (
-    <div className="panel chart-wrap" style={{ height: '100%', padding: '16px', position: 'relative' }}>
+    <div className="panel chart-wrap" style={{ height: '100%', padding: '16px' }}>
       <div style={{ fontSize: '0.65rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'JetBrains Mono', color: '#737373', marginBottom: '10px', paddingBottom: '6px', borderBottom: '1px solid #2a2a2a' }}>
         WAVELET SCALOGRAM — TIME / FREQUENCY / AMPLITUDE
       </div>
       {hasData ? (
-        <Plot
-          data={data}
-          layout={layout}
-          config={{ displaylogo: false, responsive: true }}
-          useResizeHandler
-          style={{ width: '100%', height: 'calc(100% - 30px)' }}
-        />
+        <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+          <Plot
+            data={data}
+            layout={layout}
+            config={{ displaylogo: false, responsive: true }}
+            useResizeHandler
+            style={{ width: '100%', height: '100%' }}
+          />
+        </div>
       ) : (
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#404040', fontFamily: 'JetBrains Mono', fontSize: '0.8rem' }}>
           NO SCALOGRAM DATA — RUN SIMULATION

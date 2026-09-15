@@ -81,7 +81,9 @@ const WaveformChart = ({ timeData, currentData }) => {
         MOTOR CURRENT WAVEFORM
       </div>
       {timeData && timeData.length > 0 ? (
-        <Line options={options} data={data} />
+        <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
+          <Line options={options} data={data} />
+        </div>
       ) : (
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#404040', fontFamily: 'JetBrains Mono', fontSize: '0.8rem' }}>
           NO WAVEFORM DATA — RUN SIMULATION

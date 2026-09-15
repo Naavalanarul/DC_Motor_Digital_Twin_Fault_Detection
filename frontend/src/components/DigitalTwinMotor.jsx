@@ -97,7 +97,7 @@ const DigitalTwinMotor = ({ faultMode, severity }) => {
   };
 
   return (
-    <div className="panel blueprint" style={{ display: 'flex', flexDirection: 'column', position: 'relative', minHeight: 0 }}>
+    <div className="panel blueprint" style={{ display: 'flex', flexDirection: 'column', position: 'relative', minHeight: 0, height: '100%', overflow: 'hidden' }}>
       <div style={{ position: 'absolute', top: 12, left: 16, zIndex: 10, pointerEvents: 'none' }}>
         <div style={{ fontSize: '0.65rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'JetBrains Mono', color: '#737373', marginBottom: '4px' }}>
           MOTOR CROSS-SECTION
@@ -112,8 +112,8 @@ const DigitalTwinMotor = ({ faultMode, severity }) => {
         )}
       </div>
 
-      <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px', zIndex: 2, minHeight: 0, minWidth: 0 }}>
-        <svg width="100%" height="100%" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet" style={{ maxHeight: '380px' }}>
+      <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px', zIndex: 2, minHeight: 0, minWidth: 0, overflow: 'hidden' }}>
+        <svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet" style={{ width: '100%', height: '100%', maxWidth: '360px', maxHeight: '360px' }}>
           <defs>
             <radialGradient id="statorGrad" cx="50%" cy="50%" r="50%" fx="45%" fy="45%">
               <stop offset="60%" stopColor="#1a1a1a" />

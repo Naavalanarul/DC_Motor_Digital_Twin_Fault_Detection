@@ -114,15 +114,15 @@ const SpectrumChart = ({ freqData, ampData, analysisResults }) => {
   const isMultiHarmonic = analysisResults && analysisResults.harmonic_sidebands && analysisResults.harmonic_sidebands.length > 1;
 
   return (
-    <div className="panel chart-wrap" style={{ height: '100%', padding: '16px', position: 'relative' }}>
+    <div className="panel chart-wrap" style={{ height: '100%', padding: '16px' }}>
       <div style={{ fontSize: '0.65rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'JetBrains Mono', color: '#737373', marginBottom: '10px', paddingBottom: '6px', borderBottom: '1px solid #2a2a2a' }}>
         FFT FREQUENCY SPECTRUM
       </div>
       {freqData && freqData.length > 0 ? (
-        <>
+        <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
           <Bar options={options} data={data} />
           {analysisResults && (
-            <div style={{ position: 'absolute', top: '16px', right: '16px', fontSize: '0.65rem', display: 'flex', flexDirection: 'column', gap: '4px', background: '#0a0a0a', padding: '8px', border: '1px solid #2a2a2a' }}>
+            <div style={{ position: 'absolute', top: '0', right: '0', fontSize: '0.65rem', display: 'flex', flexDirection: 'column', gap: '4px', background: '#0a0a0a', padding: '8px', border: '1px solid #2a2a2a' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <div style={{ width: '10px', height: '10px', backgroundColor: '#ffffff' }}></div>
                 <span style={{ fontFamily: 'JetBrains Mono' }}>{isMultiHarmonic ? 'HARMONICS' : 'FUNDAMENTAL'}</span>
@@ -137,7 +137,7 @@ const SpectrumChart = ({ freqData, ampData, analysisResults }) => {
               </div>
             </div>
           )}
-        </>
+        </div>
       ) : (
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#404040', fontFamily: 'JetBrains Mono', fontSize: '0.8rem' }}>
           NO SPECTRUM DATA — RUN SIMULATION
