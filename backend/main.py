@@ -20,8 +20,8 @@ from WaveletAlgorithm import WaveletAlgorithm
 from soundAcoustic import SoundAcousticSimulator
 import standards
 
-from database import init_db, create_motor, get_motor, list_motors, update_motor, delete_motor, add_fault_history, get_fault_history, save_scan_results, get_scan_results
-from priority_queue import MotorPriorityQueue
+from backend.database import init_db, create_motor, get_motor, list_motors, update_motor, delete_motor, add_fault_history, get_fault_history, save_scan_results, get_scan_results
+from backend.priority_queue import MotorPriorityQueue
 
 app = FastAPI(title="Sound Fault Detector API")
 
@@ -73,6 +73,31 @@ def downsample(data: list, target_size: int = 2000) -> list:
     indices = np.linspace(0, len(data) - 1, target_size, dtype=int)
     return [data[i] for i in indices]
 
+def analyze_current(sampling_freq, signal, fault_freq, line_freq=None, harmonic_orders=None):
+    """Use resolved FFT sidebands for severity; wavelets are descriptive only.
+
+    Broad Morlet coefficients include carrier energy at nearby sidebands and
+    must not be compared to the FFT dBc classification thresholds.
+    """
+    fft_result = FFTAlgorithm(
+        sampling_freq, signal, fault_freq, harmonic_orders, line_freq=line_freq,
+    ).main_algorithm()
+    wavelet = WaveletAlgorithm(
+        sampling_freq, signal, fault_freq,
+        line_freq=line_freq or fft_result["fundamental_freq"],
+        harmonic_orders=harmonic_orders,
+    )
+    analysis = {
+        **fft_result,
+        "algorithm": "Hann-window FFT sideband dBc; CWT/DWT visualization",
+        "physical_validation": "uncalibrated",
+        "classification_basis": "Demonstration thresholds, not verified for the physical motor",
+        "wavelet_energy_bands": wavelet.wavelet_energy_bands(),
+    }
+    return analysis, wavelet.scalogram(), fft_result
+
+
+
 def run_motor_scan(config: dict):
     """Run simulation + wavelet (CWT/DWT) analysis for a motor config dict,
     returning all results including the 3D time-frequency-amplitude scalogram."""
@@ -101,20 +126,11 @@ def run_motor_scan(config: dict):
     # mode. Other modes keep the original fundamental-only check.
     harmonic_orders = [1, 3, 5, 7, 9] if sim.fault_mode == "Eccentricity (Asymmetry)" else [1]
 
-    # Primary fault-detection engine: wavelet transform (CWT + DWT), per
-    # R. Polikar's wavelet tutorial / MRA framework -- see WaveletAlgorithm.py.
-    wavelet_algo = WaveletAlgorithm(
+    # Classification uses FFT dBc; wavelets retain time-frequency visualization.
+    analysis, scalogram, fft_reference = analyze_current(
         sim.sampling_frequency, current, sim.fault_frequency,
         line_freq=sim.line_frequency, harmonic_orders=harmonic_orders,
     )
-    analysis = wavelet_algo.main_algorithm()
-    scalogram = wavelet_algo.scalogram()
-
-    # FFT is kept only as a secondary, reference spectrum (still shown on the
-    # 2D spectrum chart) so the wavelet result can be sanity-checked against
-    # the classical method it replaces as the primary detector.
-    fft_algo = FFTAlgorithm(sim.sampling_frequency, current, sim.fault_frequency, harmonic_orders)
-    fft_reference = fft_algo.main_algorithm()
 
     N = len(current)
     fft_amp = np.abs(np.fft.fft(current)) * (2.0 / N)
@@ -209,15 +225,11 @@ def simulate_signal(req: SimulationRequest):
 def analyze_signal(req: AnalyzeRequest):
     signal_arr = np.array(req.signal)
 
-    # Primary detector: wavelet transform (CWT + DWT), per Polikar's MRA
-    # framework. See WaveletAlgorithm.py for the full explanation.
-    wavelet_algo = WaveletAlgorithm(req.sampling_freq, signal_arr, req.fault_freq)
-    results = wavelet_algo.main_algorithm()
-    results["scalogram"] = wavelet_algo.scalogram()
-
-    # FFT kept as a secondary reference spectrum only.
-    fft_algo = FFTAlgorithm(req.sampling_freq, signal_arr, req.fault_freq)
-    results["fft_reference"] = fft_algo.main_algorithm()
+    results, scalogram, fft_reference = analyze_current(
+        req.sampling_freq, signal_arr, req.fault_freq,
+    )
+    results["scalogram"] = scalogram
+    results["fft_reference"] = fft_reference
 
     # Compute full FFT spectrum
     N = len(signal_arr)

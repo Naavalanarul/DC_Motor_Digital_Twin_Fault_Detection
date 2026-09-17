@@ -1,7 +1,7 @@
 import numpy as np
 
 class FFTAlgorithm:
-    def __init__(self, sampling_freq, sig, fault_freq, harmonic_orders=None):
+    def __init__(self, sampling_freq, sig, fault_freq, harmonic_orders=None, line_freq=None):
 
         """
         CONSTANTS
@@ -14,9 +14,26 @@ class FFTAlgorithm:
         """
 
         self.sampling_frequency = sampling_freq
-        self.signal = sig
+        self.signal = np.asarray(sig, dtype=float)
         self.f_fault = fault_freq
         self.harmonic_orders = harmonic_orders or [1]
+        self.line_freq = line_freq
+
+    def _spectrum(self):
+        """Periodic Hann window limits off-bin carrier leakage; remove DC."""
+        n = len(self.signal)
+        window = np.hanning(n + 1)[:-1]
+        weighted = (self.signal - self.signal.mean()) * window
+        return np.abs(np.fft.fft(weighted)) * (2.0 / window.sum())
+
+    def _fundamental_index(self, amplitudes, frequencies):
+        candidates = np.flatnonzero(frequencies > 0)
+        if self.line_freq is not None:
+            width = max(2 * self.sampling_frequency / len(self.signal), self.line_freq * 0.05)
+            candidates = candidates[np.abs(frequencies[candidates] - self.line_freq) <= width]
+        if not len(candidates):
+            raise ValueError("No carrier bins in the requested frequency band")
+        return int(candidates[np.argmax(amplitudes[candidates])])
 
     def harmonic_sideband_survey(self):
         """
@@ -32,7 +49,7 @@ class FFTAlgorithm:
         if N == 0:
             return []
         bin_width = self.sampling_frequency / N
-        fft_amp = np.abs(np.fft.fft(self.signal)) * (2.0 / N)
+        fft_amp = self._spectrum()
         fft_freq = np.fft.fftfreq(N, 1.0 / self.sampling_frequency)
         half_N = N // 2
         fft_amp_pos = fft_amp[0:half_N]
@@ -41,8 +58,8 @@ class FFTAlgorithm:
         if len(fft_amp_pos) == 0:
             return []
 
-        # Fundamental is the tallest spike among the low-order harmonics
-        index_fundamental = np.argmax(fft_amp_pos)
+        # Search positive frequencies, optionally near the known line frequency.
+        index_fundamental = self._fundamental_index(fft_amp_pos, fft_freq_pos)
         f1 = fft_freq_pos[index_fundamental]
 
         results = []
@@ -89,10 +106,23 @@ class FFTAlgorithm:
 
         # Step 1 - Storing array length and Bin width for indexing later
         N = len(self.signal)
+        if (not np.isfinite(self.sampling_frequency) or self.sampling_frequency <= 0
+                or self.signal.ndim != 1 or not np.all(np.isfinite(self.signal))
+                or not np.isfinite(self.f_fault) or self.f_fault < 0):
+            raise ValueError("Finite signal, positive sample rate and nonnegative sideband spacing required")
+        if N < 16 or self.f_fault < 4 * self.sampling_frequency / max(N, 1):
+            return {
+                "fundamental_freq": 0.0, "upper_sideband_freq": 0.0,
+                "lower_sideband_freq": 0.0, "upper_sideband_amp": 0.0,
+                "lower_sideband_amp": 0.0, "upper_dbc": -999.0,
+                "lower_dbc": -999.0, "peak_dbc": -999.0,
+                "harmonic_sidebands": [], "measurement_valid": False,
+                "measurement_note": "Unresolved sidebands: require at least 16 samples and spacing >= 4 Hann bins",
+            }
         bin_width = self.sampling_frequency / N
 
-        # Step 2 - Performing fast fourier transforms and Normalising it
-        fft_amp = np.abs(np.fft.fft(self.signal)) * (2.0 / N)
+        # Remove DC and apply a periodic Hann window before normalization.
+        fft_amp = self._spectrum()
         fft_freq = np.fft.fftfreq(N, 1.0 / self.sampling_frequency)
 
         # Step 3 - Slice the Mirror (Nyquist Effect)
@@ -100,9 +130,8 @@ class FFTAlgorithm:
         fft_amp_pos = fft_amp[0:half_N]
         fft_freq_pos = fft_freq[0:half_N]
 
-        # 4. Find the Fundamental Frequency (The tallest spike)
-        # np.argmax finds the *index* of the highest value in the amplitude array
-        index_fundamental = np.argmax(fft_amp_pos)
+        # Search positive frequencies, optionally near the known line frequency.
+        index_fundamental = self._fundamental_index(fft_amp_pos, fft_freq_pos)
         fundamental_freq = fft_freq_pos[index_fundamental]
         base_amp = fft_amp_pos[index_fundamental]
 
@@ -114,9 +143,12 @@ class FFTAlgorithm:
                 "lower_sideband_freq": 0.0,
                 "upper_sideband_amp": 0.0,
                 "lower_sideband_amp": 0.0,
-                "upper_dbc": -np.inf,
-                "lower_dbc": -np.inf,
-                "peak_dbc": -np.inf,
+                "upper_dbc": -999.0,
+                "lower_dbc": -999.0,
+                "peak_dbc": -999.0,
+                "harmonic_sidebands": [],
+                "measurement_valid": False,
+                "measurement_note": "No measurable carrier amplitude",
             }
 
         # 5. Find Sidebands using the O(1) Math Hack

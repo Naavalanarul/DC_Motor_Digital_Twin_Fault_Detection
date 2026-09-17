@@ -2,20 +2,26 @@ import React, { useState, useEffect } from 'react';
 import { fetchFaultHistory } from '../api';
 
 const FaultHistoryTimeline = ({ motorId }) => {
-  const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [result, setResult] = useState(null);
 
   useEffect(() => {
-    if (motorId) {
-      setLoading(true);
-      fetchFaultHistory(motorId)
-        .then(data => setHistory(data))
-        .catch(err => console.error(err))
-        .finally(() => setLoading(false));
-    }
+    if (!motorId) return;
+    let active = true;
+    fetchFaultHistory(motorId)
+      .then(history => {
+        if (active) setResult({ motorId, history });
+      })
+      .catch(err => {
+        console.error(err);
+        if (active) setResult({ motorId, history: [], error: true });
+      });
+    return () => { active = false; };
   }, [motorId]);
 
+  const loading = Boolean(motorId) && result?.motorId !== motorId;
+  const history = result?.motorId === motorId ? result.history : [];
   if (loading) return <div className="panel" style={{ padding: '16px' }}>LOADING HISTORY...</div>;
+  if (result?.motorId === motorId && result.error) return <div className="panel" style={{ padding: '16px' }}>FAILED TO LOAD HISTORY</div>;
   if (!history || history.length === 0) return <div className="panel" style={{ padding: '16px' }}>NO SCAN HISTORY</div>;
 
   return (
